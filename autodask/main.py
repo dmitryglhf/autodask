@@ -2,7 +2,7 @@ from autodask.core.train import Trainer, Composer
 
 
 class AutoDask:
-    def __init__(self, task: str, cpu: int):
+    def __init__(self, task: str, cpu=2):
         self.task = task
         self.cpu = cpu
         self.fitted_ensemble = None
