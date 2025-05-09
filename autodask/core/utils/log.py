@@ -1,28 +1,43 @@
-import logging
 import os
+import logging
+import logging.handlers
 from datetime import datetime
+from pathlib import Path
 
 
-def get_logger(name: str):
-    os.makedirs("adsk_logs", exist_ok=True)
+def get_logger(
+        logger_name: str,
+        log_dir='adsk_logs',
+        level=logging.INFO,
+        log_format: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        rotation_bytes: int = 5_242_880,  # 5MB
+        backup_count: int = 3
+) -> logging.Logger:
+    os.makedirs(log_dir, exist_ok=True)
+
+    formatter = logging.Formatter(log_format)
+
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+
+    if logger.hasHandlers():
+        logger.handlers.clear()
 
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    log_filename = f"logs/autodask_launch_{current_time}.log"
+    filename = f"{log_dir}/autodask_launch_{current_time}.log"
 
-    logger = logging.getLogger(name)
-    console_handler = logging.StreamHandler()
-    file_handler = logging.FileHandler(log_filename, mode="a", encoding="utf-8")
-
-    logger.addHandler(console_handler)
-    logger.addHandler(file_handler)
-
-    formatter = logging.Formatter(
-        "{asctime} - {levelname} - {message}",
-        style="{",
-        datefmt="%Y-%m-%d %H:%M",
+    file_handler = logging.handlers.RotatingFileHandler(
+        filename=filename,
+        maxBytes=rotation_bytes,
+        backupCount=backup_count,
+        encoding='utf-8'
     )
-
-    console_handler.setFormatter(formatter)
     file_handler.setFormatter(formatter)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
 
     return logger

@@ -176,4 +176,4 @@ cython_debug/
 .pypirc
 
 # Logs
-logs/
+adsk_logs/
