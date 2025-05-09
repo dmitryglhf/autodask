@@ -113,7 +113,7 @@ If you use AutoDask in your research, please cite:
   author = {AutoDask Team},
   title = {AutoDask: AutoML Library Based on Dask with Bee Colony Optimization},
   year = {2025},
-  url = {https://github.com/yourusername/autodask}
+  url = {https://github.com/dmitryglhf/autodask}
 }
 ```
 
