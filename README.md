@@ -28,9 +28,9 @@ predictions = adsk.predict(X_test)
 ## 🛠️ Features
 
 - **Automated Machine Learning:** Handles preprocessing, feature engineering, model selection, and hyperparameter tuning
-- **Distributed Computing:** Uses Dask for parallel processing and efficient resource utilization
+- **Distributed Computing:** Dask for parallel processing and efficient resource utilization
 - **Multiple ML Tasks:** Supports classification and regression tasks
-- **Efficient Optimization:** Optuna for hyperparameter tuning
+- **Efficient Optimization:** Uses Bee Colony Optimization for intelligent hyperparameter tuning
 
 ## 🧩 Advanced Usage
 
