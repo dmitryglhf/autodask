@@ -6,17 +6,19 @@ from lightgbm import DaskLGBMClassifier, DaskLGBMRegressor
 # from catboost import CatBoostClassifier, CatBoostRegressor
 
 
+# изменить структуру на: name, (model_class, param_space)
+# добавить json с гиперпараметрами моделей
 class AtomizedModel(Enum):
     CLF_MODELS = dict(
-        l2_logreg=LogisticRegression(),
-        # xgb=XGBClassifier(),
-        lgbm=DaskLGBMClassifier(verbose=-1, n_jobs=1),
-        # cb=CatBoostClassifier()
+        l2_logreg=LogisticRegression(**params),
+        # xgboost=XGBClassifier(),
+        lgbm=DaskLGBMClassifier(**params),
+        # catboost=CatBoostClassifier()
     )
 
     REG_MODELS = dict(
-        l2_linreg=LinearRegression(),
-        # xgb=XGBRegressor(),
-        lgbm=DaskLGBMRegressor(verbose=-1, n_jobs=1),
-        # cb=CatBoostRegressor()
+        l2_linreg=LinearRegression(**params),
+        # xgboost=XGBRegressor(),
+        lgbm=DaskLGBMRegressor(**params),
+        # catboost=CatBoostRegressor()
     )
