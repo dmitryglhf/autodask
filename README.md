@@ -104,19 +104,6 @@ predictions = loaded_model.predict(new_data)
 | MNIST | Classification | 97.8% | 96.5% | 96.2% | 97.1% |
 | Boston Housing | Regression | 0.92 R² | 0.88 R² | 0.87 R² | 0.90 R² |
 
-## 📚 Citation
-
-If you use AutoDask in your research, please cite:
-
-```
-@software{autodask2025,
-  author = {Gilemkahnov Dmitrii},
-  title = {AutoDask: AutoML Library Based on Dask with Bee Colony Optimization},
-  year = {2025},
-  url = {https://github.com/dmitryglhf/autodask}
-}
-```
-
 ## 📧 Contact
 
 For questions and support, please open an issue on GitHub.
