@@ -15,7 +15,7 @@ pip install autodask
 ```python
 from autodask.main import AutoDask
 
-ad = AutoDask(task='classification')
-ad.fit(X_train, y_train)
-predictions = ad.predict(X_test)
+adsk = AutoDask(task='classification')
+adsk.fit(X_train, y_train)
+predictions = adsk.predict(X_test)
 ```
