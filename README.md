@@ -3,11 +3,11 @@
 <img src="./img/logo.png" alt="logo" width="150"/>
 
 ## AutoDask
-AutoML Library Based on Dask
+AutoML Library Based on Dask with Bee Colony Optimization
 </div>
 
 ## 📖 Overview
-AutoDask is a light AutoML library built on top of Dask for distributed computing, leveraging the Bee Colony Optimization (BCO) algorithm for model selection. It provides an easy-to-use interface for automated machine learning tasks while efficiently using computational resources.
+AutoDask is a light AutoML library built on top of Dask for distributed computing, leveraging the Bee Colony Optimization (BCO) algorithm for hyperparameter tuning and model selection. It provides an easy-to-use interface for automated machine learning tasks while efficiently using computational resources.
 
 ## ⚡ Quickstart
 
@@ -28,7 +28,7 @@ predictions = adsk.predict(X_test)
 ## 🛠️ Features
 
 - **Automated Machine Learning:** Handles preprocessing, feature engineering, model selection, and hyperparameter tuning
-- **Distributed Computing:** Dask for parallel processing and efficient resource utilization
+- **Distributed Computing:** Leverage Dask for parallel processing and efficient resource utilization
 - **Multiple ML Tasks:** Supports classification and regression tasks
 - **Efficient Optimization:** Uses Bee Colony Optimization for intelligent hyperparameter tuning
 
@@ -110,7 +110,7 @@ If you use AutoDask in your research, please cite:
 
 ```
 @software{autodask2025,
-  author = {AutoDask Team},
+  author = {Gilemkahnov Dmitrii},
   title = {AutoDask: AutoML Library Based on Dask with Bee Colony Optimization},
   year = {2025},
   url = {https://github.com/dmitryglhf/autodask}
