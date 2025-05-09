@@ -2,9 +2,13 @@
 
 <img src="./img/logo.png" alt="logo" width="150"/>
 
-## AutoDask
-AutoML Library Based on Dask with Bee Colony Optimization
+# AutoDask
+### AutoML Library Based on Dask with Bee Colony Optimization
+
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
 </div>
+
 
 ## 📖 Overview
 AutoDask is a light AutoML library built on top of Dask for distributed computing, leveraging the Bee Colony Optimization (BCO) algorithm for hyperparameter tuning and model selection. It provides an easy-to-use interface for automated machine learning tasks while efficiently using computational resources.
