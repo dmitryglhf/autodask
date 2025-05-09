@@ -1,6 +1,6 @@
 from distributed import Client, LocalCluster
 from core.task.train import Trainer
-from core.utils import get_logger
+from utils.log import get_logger
 
 
 class AutoDask:

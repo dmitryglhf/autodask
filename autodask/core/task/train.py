@@ -1,6 +1,6 @@
 import dask.array as da
 
-from core.utils import get_logger
+from utils.log import get_logger
 from autodask.models.model_repository import AtomizedModel
 from dask_ml.model_selection import train_test_split
 from dask_ml.metrics import accuracy_score as accuracy, mean_squared_error as mse

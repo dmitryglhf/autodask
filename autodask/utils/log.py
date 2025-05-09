@@ -2,7 +2,6 @@ import os
 import logging
 import logging.handlers
 from datetime import datetime
-from pathlib import Path
 
 
 def get_logger(
