@@ -1,5 +1,5 @@
 import time
-import dask.array as da
+# import dask.array as da
 
 from core.bco_optimization import BeeColonyOptimizer
 from utils.log import get_logger
@@ -17,6 +17,7 @@ warnings.filterwarnings('ignore')
 class Trainer:
     def __init__(self,
                  task: str,
+                 with_tuning=None,
                  time_limit=None,
                  metric=None,
                  optimization_rounds=30,
@@ -24,6 +25,7 @@ class Trainer:
                  models=None,
                  bco_params=None):
         self.task = task
+        self.with_tuning = with_tuning
         self.time_limit = time_limit
         self.metric_name = metric
         self.optimization_rounds = optimization_rounds
@@ -40,15 +42,9 @@ class Trainer:
     def launch(self, X, y, validation_data=None):
         self.start_time = time.time()
 
-        # Convert to Dask arrays if not already
-        X = da.from_array(X, chunks='auto') if not isinstance(X, da.Array) else X
-        y = da.from_array(y, chunks='auto') if not isinstance(y, da.Array) else y
-
         # Handle validation data
         if validation_data:
             X_val, y_val = validation_data
-            X_val = da.from_array(X_val, chunks='auto') if not isinstance(X_val, da.Array) else X_val
-            y_val = da.from_array(y_val, chunks='auto') if not isinstance(y_val, da.Array) else y_val
         else:
             # Split data if validation set not provided
             X_train, X_val, y_train, y_val = train_test_split(
@@ -60,19 +56,19 @@ class Trainer:
         # Get models based on task or provided model names
         models = self._get_models()
 
-        self.log.info('Starting models training and optimization')
+        self.log.info('Starting models training')
         fitted_models = []
 
         # Initialize bee colony optimizer
         bco = BeeColonyOptimizer(**self.bco_params)
 
         # For each model, optimize hyperparameters and train
-        for name, (model_class, param_space) in models.items():
+        for name, (model_class, param_space, param_default) in models.items():
             if self._check_time_limit():
-                self.log.info(f"Time limit reached. Stopping optimization.")
+                self.log.info(f"Time limit reached.")
                 break
 
-            self.log.info(f"Optimizing {name} model...")
+            self.log.info(f"Fitting {name} model...")
 
             # Get remaining time for this model
             remaining_time = None
@@ -81,39 +77,41 @@ class Trainer:
                 remaining_time = max(0, self.time_limit - elapsed)
 
             # Optimize hyperparameters with bee colony algorithm
-            best_params, best_score = bco.optimize(
-                model_class=model_class,
-                param_space=param_space,
-                X_train=X,
-                y_train=y,
-                X_val=X_val,
-                y_val=y_val,
-                metric_func=self.score_func,
-                maximize=self.maximize_metric,
-                rounds=self.optimization_rounds,
-                time_limit=remaining_time
-            )
+            if self.with_tuning:
+                self.log.info(f"Optimizing {name} model...")
+                best_params, best_score = bco.optimize(
+                    model_class=model_class,
+                    param_space=param_space,
+                    X_train=X,
+                    y_train=y,
+                    X_val=X_val,
+                    y_val=y_val,
+                    metric_func=self.score_func,
+                    maximize=self.maximize_metric,
+                    rounds=self.optimization_rounds,
+                    time_limit=remaining_time
+                )
 
-            self.log.info(f"Obtained optimized parameters: {best_params}")
+                self.log.info(f"Obtained optimized parameters: {best_params}")
 
-            # Train the model with best parameters
-            model = model_class(**best_params)
+                # Train the model with best parameters
+                model = model_class(**best_params)
+            else:
+                model = model_class(**param_default)
 
-            # Handle sample weights during fitting if provided
             model.fit(X, y)
 
             # Evaluate and log performance
             y_pred = model.predict(X_val)
             validation_score = self.score_func(y_val, y_pred)
 
-            self.log.info(f'The {name} model has been successfully optimized and fitted. '
+            self.log.info(f'The {name} model has been successfully fitted. '
                           f'With {self.score_name} score on validation set: {validation_score}')
 
             # Store model with its score
             fitted_models.append({
                 'model': (model, name),
-                'score': validation_score if self.maximize_metric else -validation_score,
-                'params': best_params
+                'score': validation_score if self.maximize_metric else -validation_score
             })
 
         # Sort models by performance
@@ -124,8 +122,11 @@ class Trainer:
             ensemble_models = fitted_models[:min(len(fitted_models), self.max_ensemble_models)]
             # Implement ensemble creation logic here
             # ...
+            # fitted_models[0] = ensemble_models
+        # else:
+            # return {'best_model': fitted_models[0]}
 
-        # Return the best model or ensemble
+        # Return the best ensemble
         if not fitted_models:
             raise ValueError("No models were successfully trained. Check the logs for errors.")
 

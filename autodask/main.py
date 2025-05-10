@@ -8,6 +8,7 @@ class AutoDask:
             self,
             task: str,
             n_jobs=4,
+            with_tuning=False,
             time_limit=60*5,
             metric=None,
             optimization_rounds=30,
@@ -17,6 +18,7 @@ class AutoDask:
     ):
         self.task = task
         self.n_jobs = n_jobs
+        self.with_tuning = with_tuning
         self.time_limit = time_limit
         self.metric = metric
         self.optimization_rounds = optimization_rounds
@@ -32,12 +34,13 @@ class AutoDask:
 
         trainer = Trainer(
             task=self.task,
+            with_tuning=self.with_tuning,
             time_limit=self.time_limit,
             metric=self.metric,
             optimization_rounds=self.optimization_rounds,
             max_ensemble_models=self.max_ensemble_models,
             models=self.models,
-            bco_params=self.bco_params,
+            bco_params=self.bco_params
         )
 
         model_and_score = trainer.launch(
