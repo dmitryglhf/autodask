@@ -52,7 +52,6 @@ adsk = AutoDask(
     optimization_rounds=50,
     max_ensemble_models=5,
     models=['lgbm', 'xgboost', 'catboost'],  # Specify models to consider
-    verbose=2
 )
 
 # Train with advanced options
