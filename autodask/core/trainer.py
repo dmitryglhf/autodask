@@ -111,26 +111,18 @@ class Trainer:
             # Store model with its score
             fitted_models.append({
                 'model': (model, name),
-                'score': validation_score if self.maximize_metric else -validation_score
+                'score': validation_score if self.maximize_metric else -validation_score,
+                'predictions': y_pred
             })
 
         # Sort models by performance
         fitted_models.sort(key=lambda x: x['score'], reverse=True)
 
-        # Create ensemble if requested
-        if self.max_ensemble_models and len(fitted_models) > 1:
-            ensemble_models = fitted_models[:min(len(fitted_models), self.max_ensemble_models)]
-            # Implement ensemble creation logic here
-            # ...
-            # fitted_models[0] = ensemble_models
-        # else:
-            # return {'best_model': fitted_models[0]}
-
         # Return the best ensemble
         if not fitted_models:
             raise ValueError("No models were successfully trained. Check the logs for errors.")
 
-        return {'best_model': fitted_models[0]}
+        return fitted_models[:min(len(fitted_models), self.max_ensemble_models)]
 
     def _check_time_limit(self):
         """Check if time limit has been reached"""

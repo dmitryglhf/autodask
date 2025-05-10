@@ -1,4 +1,6 @@
 from distributed import Client, LocalCluster
+
+from core.ensembling import EnsembleBlender
 from core.trainer import Trainer
 from utils.log import get_logger
 
@@ -43,14 +45,13 @@ class AutoDask:
             bco_params=self.bco_params
         )
 
-        model_and_score = trainer.launch(
+        best_models = trainer.launch(
             X, y,
             validation_data=validation_data,
         )
 
-        model, name = model_and_score['best_model']['model']
-        self.log.info(f"Chosen best model: {name}")
-        self.ensemble = model
+        self.ensemble = EnsembleBlender(best_models)
+        self.ensemble.fit(X, y)
 
         self._shutdown_dask_server()
         return self
@@ -95,6 +96,7 @@ class AutoDask:
         self.dask_client = Client(cluster)
         self.dask_cluster = cluster
         if cluster: self.log.info('Dask Server successfully created')
+        self.log.info('Dashboard is available at http://localhost:8787/status.')
 
     def _shutdown_dask_server(self):
         self.log.info('Shutting down Dask Server...')
