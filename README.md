@@ -74,7 +74,7 @@ AutoDask implements the Bee Colony Optimization algorithm, a nature-inspired met
 
 This approach efficiently navigates the vast model configurations with fewer evaluations compared to traditional grid search or random search methods.
 
-**Parameters**
+**Parameters** 
 ```python
 from autodask.main import AutoDask
 
@@ -90,7 +90,7 @@ adsk = AutoDask(
 )
 ```
 
-## Saving and Loading Models
+## Saving and Loading Models (temporarily unavailable)
 
 ```python
 # Save the trained model
@@ -104,10 +104,7 @@ predictions = loaded_model.predict(new_data)
 
 ## Performance Comparison
 
-| Dataset | Task | AutoDask (BCO) | Random Search | Grid Search | Bayesian Opt |
-|---------|------|----------------|---------------|------------|--------------|
-| MNIST | Classification | 97.8% | 96.5% | 96.2% | 97.1% |
-| Boston Housing | Regression | 0.92 R² | 0.88 R² | 0.87 R² | 0.90 R² |
+Coming soon...
 
 ## 📧 Contact
 
