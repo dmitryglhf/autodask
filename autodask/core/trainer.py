@@ -1,7 +1,7 @@
 import time
 # import dask.array as da
 
-from core.bco_optimization import BeeColonyOptimizer
+from core.bee_algorithm import BeeColonyOptimizer
 from utils.log import get_logger
 from models.model_repository import AtomizedModel
 from dask_ml.model_selection import train_test_split

@@ -10,7 +10,7 @@ class AutoDask:
             n_jobs=4,
             with_tuning=False,
             time_limit=60*5,
-            metric=None,
+            metric:str=None,
             optimization_rounds=30,
             max_ensemble_models=3,
             models=None,
@@ -62,14 +62,14 @@ class AutoDask:
         return self.ensemble.predict_proba(X)
 
     def best_model(self):
-        return self.best_model
+        return self.ensemble
 
     def save(self, path):
-        """Implementation for saving the model"""
+        """Implementation for saving the model (unsupported yet)"""
         import pickle
 
     def load_model(self, path):
-        """Implementation for loading the model"""
+        """Implementation for loading the model (unsupported yet)"""
         import pickle
 
     def _create_dask_server(self):
