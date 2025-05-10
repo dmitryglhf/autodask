@@ -5,7 +5,10 @@ from core.bco_optimization import BeeColonyOptimizer
 from utils.log import get_logger
 from autodask.models.model_repository import AtomizedModel
 from dask_ml.model_selection import train_test_split
-from dask_ml.metrics import accuracy_score, mean_squared_error, r2_score
+from sklearn.metrics import (
+    accuracy_score, f1_score,
+    mean_squared_error, r2_score, mean_absolute_error
+)
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -93,6 +96,8 @@ class Trainer:
                 time_limit=remaining_time
             )
 
+            self.log.info(f"Obtained optimized parameters: {best_params}")
+
             # Train the model with best parameters
             model = model_class(**best_params)
 
@@ -140,11 +145,13 @@ class Trainer:
             if self.metric_name == 'accuracy' or self.metric_name is None:
                 self.score_func = accuracy_score
                 self.score_name = 'accuracy'
+            elif self.metric_name == 'f1':
+                self.score_func = f1_score
+                self.score_name = 'f1'
             else:
-                # Add more classification metrics as needed
+                # Default to accuracy for classification
                 self.score_func = accuracy_score
                 self.score_name = 'accuracy'
-
             self.maximize_metric = True
 
         elif self.task == 'regression':
@@ -156,6 +163,10 @@ class Trainer:
                 self.score_func = r2_score
                 self.score_name = 'r2'
                 self.maximize_metric = True
+            elif self.metric_name == 'mae':
+                self.score_func = mean_absolute_error
+                self.score_name = 'mae'
+                self.maximize_metric = False
             else:
                 # Default to MSE for regression
                 self.score_func = mean_squared_error
@@ -167,9 +178,9 @@ class Trainer:
     def _get_models(self):
         """Get models based on task or provided model names"""
         if self.task == 'classification':
-            all_models = AtomizedModel.CLF_MODELS
+            all_models = AtomizedModel.get_classifier_models()
         elif self.task == 'regression':
-            all_models = AtomizedModel.REG_MODELS
+            all_models = AtomizedModel.get_regressor_models()
         else:
             raise ValueError(f'Unexpected task: {self.task}')
 

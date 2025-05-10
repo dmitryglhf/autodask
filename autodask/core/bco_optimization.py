@@ -20,8 +20,9 @@ class BeeColonyOptimizer:
         self.scout_bees = scout_bees
         self.abandonment_limit = abandonment_limit
         self.exploration_rate = exploration_rate
-        self.solutions = []
-        self.solution_trials = {}
+
+        self.solutions = None
+        self.solution_trials = None
 
         self.log = get_logger(self.__class__.__name__)
 
@@ -35,11 +36,18 @@ class BeeColonyOptimizer:
         best_score = float('-inf') if maximize else float('inf')
 
         # Initialize solutions with random parameter sets
+        self.solutions = []
+        self.solution_trials = {}
+
         for _ in range(self.employed_bees):
             params = self._generate_random_params(param_space)
             score = self._evaluate_params(model_class, params, X_train, y_train, X_val, y_val, metric_func)
+
+            # Create a stable key for the params
+            params_key = self._get_params_key(params)
+
             self.solutions.append((params, score))
-            self.solution_trials[str(params)] = 0
+            self.solution_trials[params_key] = 0
 
             if (maximize and score > best_score) or (not maximize and score < best_score):
                 best_score = score
@@ -52,17 +60,24 @@ class BeeColonyOptimizer:
             # Employed bees phase: explore neighborhood of existing solutions
             for i in range(len(self.solutions)):
                 params, score = self.solutions[i]
+                params_key = self._get_params_key(params)
+
                 new_params = self._explore_neighborhood(params, param_space)
+                new_params_key = self._get_params_key(new_params)
                 new_score = self._evaluate_params(model_class, new_params, X_train, y_train, X_val, y_val, metric_func)
 
                 if (maximize and new_score > score) or (not maximize and new_score < score):
                     self.solutions[i] = (new_params, new_score)
-                    self.solution_trials[str(params)] = 0
+                    self.solution_trials[new_params_key] = 0
+
                     if (maximize and new_score > best_score) or (not maximize and new_score < best_score):
                         best_score = new_score
                         best_params = new_params
                 else:
-                    self.solution_trials[str(params)] += 1
+                    # Initialize if key doesn't exist
+                    if params_key not in self.solution_trials:
+                        self.solution_trials[params_key] = 0
+                    self.solution_trials[params_key] += 1
 
             # Onlooker bees phase: focus on promising solutions
             fitness_values = [s[1] for s in self.solutions]
@@ -76,37 +91,59 @@ class BeeColonyOptimizer:
                 probs = [p / total for p in probs]
 
             for _ in range(self.onlooker_bees):
-                selected_idx = np.random.choice(len(self.solutions), p=probs)
-                params, score = self.solutions[selected_idx]
-                new_params = self._explore_neighborhood(params, param_space)
-                new_score = self._evaluate_params(
-                    model_class, new_params, X_train, y_train, X_val, y_val, metric_func
-                )
+                if len(probs) > 0:  # Only proceed if we have valid probabilities
+                    selected_idx = np.random.choice(len(self.solutions), p=probs)
+                    params, score = self.solutions[selected_idx]
+                    params_key = self._get_params_key(params)
 
-                if (maximize and new_score > score) or (not maximize and new_score < score):
-                    self.solutions[selected_idx] = (new_params, new_score)
-                    self.solution_trials[str(params)] = 0
-                    if (maximize and new_score > best_score) or (not maximize and new_score < best_score):
-                        best_score = new_score
-                        best_params = new_params
-                else:
-                    self.solution_trials[str(params)] += 1
-
-            # Scout bees phase: abandon solutions that haven't improved and explore new areas
-            for i in range(len(self.solutions)):
-                params, _ = self.solutions[i]
-                if self.solution_trials[str(params)] >= self.abandonment_limit:
-                    new_params = self._generate_random_params(param_space)
+                    new_params = self._explore_neighborhood(params, param_space)
+                    new_params_key = self._get_params_key(new_params)
                     new_score = self._evaluate_params(model_class, new_params, X_train, y_train, X_val, y_val,
                                                       metric_func)
+
+                    if (maximize and new_score > score) or (not maximize and new_score < score):
+                        self.solutions[selected_idx] = (new_params, new_score)
+                        self.solution_trials[new_params_key] = 0
+
+                        if (maximize and new_score > best_score) or (not maximize and new_score < best_score):
+                            best_score = new_score
+                            best_params = new_params
+                    else:
+                        # Initialize if key doesn't exist
+                        if params_key not in self.solution_trials:
+                            self.solution_trials[params_key] = 0
+                        self.solution_trials[params_key] += 1
+
+            # Scout bees phase: abandon solutions that haven't improved
+            for i in range(len(self.solutions)):
+                params, _ = self.solutions[i]
+                params_key = self._get_params_key(params)
+
+                # Initialize if key doesn't exist
+                if params_key not in self.solution_trials:
+                    self.solution_trials[params_key] = 0
+
+                if self.solution_trials[params_key] >= self.abandonment_limit:
+                    new_params = self._generate_random_params(param_space)
+                    new_params_key = self._get_params_key(new_params)
+                    new_score = self._evaluate_params(model_class, new_params, X_train, y_train, X_val, y_val,
+                                                      metric_func)
+
                     self.solutions[i] = (new_params, new_score)
-                    self.solution_trials[str(new_params)] = 0
+                    self.solution_trials[new_params_key] = 0
 
                     if (maximize and new_score > best_score) or (not maximize and new_score < best_score):
                         best_score = new_score
                         best_params = new_params
 
         return best_params, best_score
+
+    def _get_params_key(self, params):
+        """Convert parameters dictionary to a stable string key"""
+        # Sort items to ensure consistent string representation
+        items = sorted(params.items())
+        # Create a tuple of tuples that can be used as a dictionary key
+        return str(items)
 
     def _generate_random_params(self, param_space):
         """Generate random parameters from the parameter space"""
@@ -160,5 +197,5 @@ class BeeColonyOptimizer:
             score = metric_func(y_val, y_pred)
             return score
         except Exception as e:
-            self.log.info(f"Error evaluating params {params}: {e}")
+            self.log.debug(f"Error evaluating params {params}: {e}")
             return float('-inf')  # Return a very bad score for invalid parameters

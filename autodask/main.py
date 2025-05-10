@@ -7,11 +7,11 @@ class AutoDask:
     def __init__(
             self,
             task: str,
-            n_jobs=None,
-            time_limit=None,
+            n_jobs=4,
+            time_limit=60*5,
             metric=None,
-            optimization_rounds=None,
-            max_ensemble_models=None,
+            optimization_rounds=30,
+            max_ensemble_models=3,
             models=None,
             bco_params=None,
             verbose=1
@@ -65,11 +65,11 @@ class AutoDask:
         return self.best_model
 
     def save(self, path):
-        # Implementation for saving the model
+        """Implementation for saving the model"""
         import pickle
 
     def load_model(self, path):
-        # Implementation for loading the model
+        """Implementation for loading the model"""
         import pickle
 
     def _create_dask_server(self):
@@ -94,6 +94,7 @@ class AutoDask:
         cluster = LocalCluster(**cluster_params)
         self.dask_client = Client(cluster)
         self.dask_cluster = cluster
+        if cluster: self.log.info('Dask Server successfully created')
 
     def _shutdown_dask_server(self):
         self.log.info('Shutting down Dask Server...')
