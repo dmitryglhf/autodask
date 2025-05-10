@@ -13,8 +13,7 @@ class AutoDask:
             optimization_rounds=30,
             max_ensemble_models=3,
             models=None,
-            bco_params=None,
-            verbose=1
+            bco_params=None
     ):
         self.task = task
         self.n_jobs = n_jobs
@@ -24,7 +23,6 @@ class AutoDask:
         self.max_ensemble_models = max_ensemble_models
         self.models = models
         self.bco_params = bco_params or {}
-        self.verbose = verbose
 
         self.ensemble = None
         self.log = get_logger(self.__class__.__name__)
@@ -40,7 +38,6 @@ class AutoDask:
             max_ensemble_models=self.max_ensemble_models,
             models=self.models,
             bco_params=self.bco_params,
-            verbose=self.verbose
         )
 
         model_and_score = trainer.launch(

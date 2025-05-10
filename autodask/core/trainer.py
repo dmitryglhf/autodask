@@ -1,9 +1,9 @@
-import dask.array as da
 import time
+import dask.array as da
 
 from core.bco_optimization import BeeColonyOptimizer
 from utils.log import get_logger
-from autodask.models.model_repository import AtomizedModel
+from models.model_repository import AtomizedModel
 from dask_ml.model_selection import train_test_split
 from sklearn.metrics import (
     accuracy_score, f1_score,
@@ -22,8 +22,7 @@ class Trainer:
                  optimization_rounds=30,
                  max_ensemble_models=None,
                  models=None,
-                 bco_params=None,
-                 verbose=1):
+                 bco_params=None):
         self.task = task
         self.time_limit = time_limit
         self.metric_name = metric
@@ -31,7 +30,6 @@ class Trainer:
         self.max_ensemble_models = max_ensemble_models
         self.model_names = models
         self.bco_params = bco_params or {}
-        self.verbose = verbose
         self.start_time = None
 
         self.log = get_logger(self.__class__.__name__)
