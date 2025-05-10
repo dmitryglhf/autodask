@@ -2,9 +2,14 @@
 
 <img src="./img/logo.png" alt="logo" width="150"/>
 
-## AutoDask
-AutoML Library Based on Dask with Bee Colony Optimization
+# AutoDask
+### AutoML Library Based on Dask with Bee Colony Optimization
+
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 </div>
+
 
 ## 📖 Overview
 AutoDask is a light AutoML library built on top of Dask for distributed computing, leveraging the Bee Colony Optimization (BCO) algorithm for hyperparameter tuning and model selection. It provides an easy-to-use interface for automated machine learning tasks while efficiently using computational resources.
@@ -69,7 +74,7 @@ AutoDask implements the Bee Colony Optimization algorithm, a nature-inspired met
 
 This approach efficiently navigates the vast model configurations with fewer evaluations compared to traditional grid search or random search methods.
 
-**Parameters**
+**Parameters** 
 ```python
 from autodask.main import AutoDask
 
@@ -85,7 +90,7 @@ adsk = AutoDask(
 )
 ```
 
-## Saving and Loading Models
+## Saving and Loading Models (temporarily unavailable)
 
 ```python
 # Save the trained model
@@ -99,10 +104,7 @@ predictions = loaded_model.predict(new_data)
 
 ## Performance Comparison
 
-| Dataset | Task | AutoDask (BCO) | Random Search | Grid Search | Bayesian Opt |
-|---------|------|----------------|---------------|------------|--------------|
-| MNIST | Classification | 97.8% | 96.5% | 96.2% | 97.1% |
-| Boston Housing | Regression | 0.92 R² | 0.88 R² | 0.87 R² | 0.90 R² |
+Coming soon...
 
 ## 📧 Contact
 
