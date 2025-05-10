@@ -59,8 +59,7 @@ adsk = AutoDask(
 adsk.fit(
     X_train, 
     y_train,
-    validation_data=(X_val, y_val),
-    sample_weight=weights
+    validation_data=(X_val, y_val)
 )
 ```
 
