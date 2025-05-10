@@ -5,7 +5,7 @@ description = "AutoML Based on Dask"
 authors = [
     {name = "Dmitry Gilemkhanov",email = "dima.rize@yandex.ru"}
 ]
-license = {text = "Apache-2.0 license"}
+license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
