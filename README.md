@@ -16,7 +16,7 @@ AutoDask is a light AutoML library built on top of Dask for distributed computin
 
 ## ⚡ Quickstart
 
-**Installation**
+**Installation** (unsupported yet)
 ```commandline
 pip install autodask
 ```
@@ -90,7 +90,7 @@ adsk = AutoDask(
 )
 ```
 
-## Saving and Loading Models (temporarily unavailable)
+## Saving and Loading Models (unsupported yet)
 
 ```python
 # Save the trained model
