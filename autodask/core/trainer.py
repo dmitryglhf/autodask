@@ -1,16 +1,18 @@
 import time
+
+import numpy as np
+
 # import dask.array as da
 
 from core.bee_algorithm import BeeColonyOptimizer
 from utils.log import get_logger
-from models.model_repository import AtomizedModel
+from repository.model_repository import AtomizedModel
 from dask_ml.model_selection import train_test_split
-from sklearn.metrics import (
-    accuracy_score, f1_score,
-    mean_squared_error, r2_score, mean_absolute_error
-)
 
 import warnings
+
+from utils.regular_conditions import is_classification_task, setup_metric
+
 warnings.filterwarnings('ignore')
 
 
@@ -19,7 +21,7 @@ class Trainer:
                  task: str,
                  with_tuning=None,
                  time_limit=None,
-                 metric=None,
+                 metric:str=None,
                  optimization_rounds=30,
                  max_ensemble_models=None,
                  models=None,
@@ -27,7 +29,6 @@ class Trainer:
         self.task = task
         self.with_tuning = with_tuning
         self.time_limit = time_limit
-        self.metric_name = metric
         self.optimization_rounds = optimization_rounds
         self.max_ensemble_models = max_ensemble_models
         self.model_names = models
@@ -37,7 +38,9 @@ class Trainer:
         self.log = get_logger(self.__class__.__name__)
 
         # Setup metric function
-        self._setup_metric()
+        self.score_func, self.metric_name, self.maximize_metric = (
+            setup_metric(metric_name=metric, task=task)
+        )
 
     def launch(self, X, y, validation_data=None):
         self.start_time = time.time()
@@ -102,17 +105,21 @@ class Trainer:
             model.fit(X, y)
 
             # Evaluate and log performance
-            y_pred = model.predict(X_val)
-            validation_score = self.score_func(y_val, y_pred)
+            if is_classification_task(self.task):
+                probs = model.predict_proba(X_val)
+                y_pred = np.argmax(probs, axis=1)
+            else:
+                y_pred = model.predict(X_val)
 
+            validation_score = self.score_func(y_val, y_pred)
             self.log.info(f'The {name} model has been successfully fitted. '
-                          f'With {self.score_name} score on validation set: {validation_score}')
+                          f'With {self.metric_name} score on validation set: {validation_score}')
 
             # Store model with its score
             fitted_models.append({
                 'model': (model, name),
                 'score': validation_score if self.maximize_metric else -validation_score,
-                'predictions': y_pred
+                'preds': y_pred
             })
 
         # Sort models by performance
@@ -130,56 +137,18 @@ class Trainer:
             return True
         return False
 
-    def _setup_metric(self):
-        """Set up the metric function based on task or provided metric name"""
-        if self.task == 'classification':
-            if self.metric_name == 'accuracy' or self.metric_name is None:
-                self.score_func = accuracy_score
-                self.score_name = 'accuracy'
-            elif self.metric_name == 'f1':
-                self.score_func = f1_score
-                self.score_name = 'f1'
-            else:
-                # Default to accuracy for classification
-                self.score_func = accuracy_score
-                self.score_name = 'accuracy'
-            self.maximize_metric = True
-
-        elif self.task == 'regression':
-            if self.metric_name == 'mse' or self.metric_name is None:
-                self.score_func = mean_squared_error
-                self.score_name = 'mse'
-                self.maximize_metric = False
-            elif self.metric_name == 'r2':
-                self.score_func = r2_score
-                self.score_name = 'r2'
-                self.maximize_metric = True
-            elif self.metric_name == 'mae':
-                self.score_func = mean_absolute_error
-                self.score_name = 'mae'
-                self.maximize_metric = False
-            else:
-                # Default to MSE for regression
-                self.score_func = mean_squared_error
-                self.score_name = 'mse'
-                self.maximize_metric = False
-        else:
-            raise ValueError(f'Unsupported task: {self.task}')
-
     def _get_models(self):
         """Get models based on task or provided model names"""
-        if self.task == 'classification':
+        if is_classification_task(self.task):
             all_models = AtomizedModel.get_classifier_models()
-        elif self.task == 'regression':
-            all_models = AtomizedModel.get_regressor_models()
         else:
-            raise ValueError(f'Unexpected task: {self.task}')
+            all_models = AtomizedModel.get_regressor_models()
 
         # Filter models if specific ones were requested
         if self.model_names:
             models = {name: model for name, model in all_models.items() if name in self.model_names}
             if not models:
-                self.log.warning(
+                self.log.info(
                     f"None of the specified models {self.model_names} were found. Using all available models.")
                 models = all_models
         else:

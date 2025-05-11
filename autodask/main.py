@@ -50,7 +50,7 @@ class AutoDask:
             validation_data=validation_data,
         )
 
-        self.ensemble = EnsembleBlender(best_models)
+        self.ensemble = EnsembleBlender(best_models, task=self.task)
         self.ensemble.fit(X, y)
 
         self._shutdown_dask_server()
