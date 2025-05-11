@@ -100,6 +100,7 @@ class Trainer:
                 # Train the model with best parameters
                 model = model_class(**best_params)
             else:
+                self.log.info(f"Obtained parameters: {param_default}")
                 model = model_class(**param_default)
 
             model.fit(X, y)

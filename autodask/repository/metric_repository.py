@@ -54,7 +54,7 @@ METRICS_REPOSITORY: Dict[str, Dict[str, Any]] = {
 
 
 def get_metric(metric_name: str, task: str = None) -> Tuple[Callable, str, bool]:
-    """Return metric and properties"""
+    """Return metric and their properties"""
     if metric_name not in METRICS_REPOSITORY:
         raise ValueError(f"Metric '{metric_name}' not found in repository. "
                          f"Available metrics: {list(METRICS_REPOSITORY.keys())}")
