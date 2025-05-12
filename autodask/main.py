@@ -1,3 +1,7 @@
+from typing import Union
+
+import numpy as np
+import pandas as pd
 from distributed import Client, LocalCluster
 
 from core.ensembling import EnsembleBlender
@@ -31,7 +35,9 @@ class AutoDask:
         self.ensemble = None
         self.log = get_logger(self.__class__.__name__)
 
-    def fit(self, X, y, validation_data:tuple=None):
+    def fit(self, X: Union[pd.DataFrame, np.ndarray],
+            y: Union[pd.DataFrame, np.ndarray],
+            validation_data:tuple[Union[pd.DataFrame, np.ndarray]]=None):
         self._create_dask_server()
 
         trainer = Trainer(
@@ -50,8 +56,8 @@ class AutoDask:
             validation_data=validation_data,
         )
 
-        self.ensemble = EnsembleBlender(best_models, task=self.task)
-        self.ensemble.fit(X, y)
+        self.ensemble = EnsembleBlender(best_models, task=self.task, metric=self.metric)
+        self.ensemble.fit(y)
 
         self._shutdown_dask_server()
         return self
