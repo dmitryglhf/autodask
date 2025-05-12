@@ -1,3 +1,5 @@
+import numpy as np
+
 from repository.metric_repository import get_metric, get_default_metric
 
 
@@ -18,3 +20,7 @@ def setup_metric(metric_name:str=None, task:str=None):
         score_func, metric_name, maximize_metric = get_default_metric(task)
     score_func, metric_name, maximize_metric =  get_metric(metric_name)
     return score_func, metric_name, maximize_metric
+
+
+def get_n_classes(y):
+    return len(np.unique(y))

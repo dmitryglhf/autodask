@@ -7,6 +7,7 @@ from distributed import Client, LocalCluster
 from core.ensembling import EnsembleBlender
 from core.trainer import Trainer
 from utils.log import get_logger
+from utils.regular_functions import is_classification_task, get_n_classes
 
 
 class AutoDask:
@@ -34,11 +35,27 @@ class AutoDask:
 
         self.ensemble = None
         self.log = get_logger(self.__class__.__name__)
+        self.n_classes = None
 
     def fit(self, X: Union[pd.DataFrame, np.ndarray],
             y: Union[pd.DataFrame, np.ndarray],
             validation_data:tuple[Union[pd.DataFrame, np.ndarray]]=None):
         self._create_dask_server()
+
+        if is_classification_task(self.task):
+            self.n_classes = get_n_classes(y)
+            if self.n_classes == 2:
+                self.log.info(f"Task: binary {self.task}\n")
+            elif self.n_classes > 2:
+                self.log.info(f"Task: multiclass {self.task}\n")
+            else:
+                raise ValueError(f"Obtained {self.n_classes}. Unable to classify.")
+
+        self.log.info("Starting Trainer with listed constraints:")
+        self.log.info(f"- time: {self.time_limit:.2f} seconds")
+        self.log.info(f"- CPU: {self.n_jobs} cores")
+        if self.models is not None:
+            self.log.info(f"Models to be considered: {self.models}")
 
         trainer = Trainer(
             task=self.task,
@@ -56,7 +73,7 @@ class AutoDask:
             validation_data=validation_data,
         )
 
-        self.ensemble = EnsembleBlender(best_models, task=self.task, metric=self.metric)
+        self.ensemble = EnsembleBlender(best_models, task=self.task, metric=self.metric, n_classes=self.n_classes)
         self.ensemble.fit(y)
 
         self._shutdown_dask_server()

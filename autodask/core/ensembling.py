@@ -1,9 +1,10 @@
 import numpy as np
+import pandas as pd
 from sklearn.base import BaseEstimator
 from scipy.optimize import minimize_scalar
 
 from utils.log import get_logger
-from utils.regular_conditions import is_classification_task, setup_metric
+from utils.regular_functions import is_classification_task, setup_metric
 
 
 class EnsembleBlender(BaseEstimator):
@@ -12,7 +13,8 @@ class EnsembleBlender(BaseEstimator):
                  task: str,
                  metric:str=None,
                  max_iter=100,
-                 tol=1e-6):
+                 tol=1e-6,
+                 n_classes=None):
         self.fitted_models = fitted_models
         self.task = task
         self.metric = metric
@@ -26,15 +28,22 @@ class EnsembleBlender(BaseEstimator):
         self.score_func, self.metric_name, self.maximize_metric = (
             setup_metric(metric_name=metric, task=task)
         )
+        self.features = self._get_joined_features()
+        self.n_models = len(fitted_models)
+        self.n_samples = self._get_num_samples()
+        self.n_classes = n_classes
 
     def fit(self, y):
         """Weights optimization"""
+        # if self.num_models == 1:
+        #     self.log.info(f"Weights: {1}*{model}")  # или добавить эту обработку на уровень выше
+
         self.log.info(f"Starting weights optimization for models {...}")
 
         if is_classification_task(self.task):
-            weighted_pred = self._get_classification_score
+            weighted_pred = self.get_classification_score
         else:
-            weighted_pred = self._get_regression_score
+            weighted_pred = self.get_regression_score
 
         n_models = len(self.fitted_models)
         weights = np.ones(n_models) / n_models
@@ -43,7 +52,7 @@ class EnsembleBlender(BaseEstimator):
             old_weights = weights.copy()
 
             for i in range(n_models):
-                # Fix all the weights except w_i
+                # Lock all the weights except w_i
                 def objective(wi):
                     w = weights.copy()
                     w[i] = wi
@@ -72,13 +81,14 @@ class EnsembleBlender(BaseEstimator):
         # здесь каждая из моделей должны сделать предскзание на X_test
         # и затем нужно умножить их на веса, полученные в fit
 
-    def _get_classification_score(self, weights: np.ndarray, y_pred):
-        probs = np.zeros((n_samples, n_classes))
-        for class_idx in range(n_classes):
+
+    def get_classification_score(self, weights: np.ndarray, features, y_pred=None):
+        probs = np.zeros((self.n_samples, self.n_classes))
+        for class_idx in range(self.n_classes):
             # Get prediction for current class from all models
-            class_preds = np.zeros((n_samples, n_models))
-            for model_idx in range(n_models):
-                col_idx = model_idx * n_classes + class_idx
+            class_preds = np.zeros((self.n_samples, self.n_models))
+            for model_idx in range(self.n_models):
+                col_idx = model_idx * self.n_classes + class_idx
                 class_preds[:, model_idx] = features[:, col_idx]
             probs[:, class_idx] = np.sum(class_preds * weights, axis=1)
 
@@ -87,21 +97,25 @@ class EnsembleBlender(BaseEstimator):
         # If `target` is None, return predicted labels only (inference mode).
         # Otherwise, proceed with optimization (training mode).
         if y_pred is not None:
-            score = self.score_func(y_pred, labels)
+            return self.score_func(y_pred, labels)
         else:
             return labels, probs
 
-        return score
 
-    def _get_regression_score(self, weights: np.ndarray, y_true):
+    def get_regression_score(self, weights: np.ndarray, features, y_true):
         # Get predictions by applying the weights
         predictions = np.dot(features, weights)
 
         # If `target` is None, return predicted labels only (inference mode).
         # Otherwise, proceed with optimization (training mode).
         if y_true is not None:
-            score = -self.score_func(y_true, predictions) # minimizing operation for regression
+            return -self.score_func(y_true, predictions) # minimizing operation for regression
         else:
             return predictions
 
-        return score
+    def _get_joined_features(self):
+        preds_list = [model['preds'] for model in self.fitted_models]
+        return pd.concat(preds_list, axis=1)
+
+    def _get_num_samples(self):
+        return len(self.fitted_models[0]['preds'])
