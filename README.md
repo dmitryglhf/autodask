@@ -89,7 +89,7 @@ adsk = AutoDask(
 )
 ```
 
-## Saving and Loading Models (unsupported yet)
+## Saving and Loading Models
 
 ```python
 # Save the trained model
