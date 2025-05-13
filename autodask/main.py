@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from distributed import Client, LocalCluster
 
-from core.ensembling import EnsembleBlender
+from core.blender import WeightedAverageBlender
 from core.trainer import Trainer
 from utils.log import get_logger
 from utils.regular_functions import is_classification_task, get_n_classes
@@ -73,7 +73,12 @@ class AutoDask:
             validation_data=validation_data,
         )
 
-        self.ensemble = EnsembleBlender(best_models, task=self.task, metric=self.metric, n_classes=self.n_classes)
+        self.ensemble = WeightedAverageBlender(
+            best_models,
+            task=self.task,
+            metric=self.metric,
+            n_classes=self.n_classes
+        )
         self.ensemble.fit(y)
 
         self._shutdown_dask_server()
