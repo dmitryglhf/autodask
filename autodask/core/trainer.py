@@ -11,7 +11,7 @@ from dask_ml.model_selection import train_test_split
 
 import warnings
 
-from utils.regular_conditions import is_classification_task, setup_metric
+from utils.regular_functions import is_classification_task, setup_metric
 
 warnings.filterwarnings('ignore')
 
