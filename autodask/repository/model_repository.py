@@ -48,8 +48,8 @@ class AtomizedModel:
             ),
             'extra_tree': (
                 ExtraTreesClassifier,
-                param_spaces.get('extra_tree_clf', {}),
-                param_default.get('extra_tree_clf', {}),
+                param_spaces.get('extra_trees_clf', {}),
+                param_default.get('extra_trees_clf', {}),
             ),
             'lgbm': (
                 LGBMClassifier,
@@ -84,8 +84,8 @@ class AtomizedModel:
             ),
             'extra_tree': (
                 ExtraTreesRegressor,
-                param_spaces.get('extra_tree_reg', {}),
-                param_default.get('extra_tree_reg', {}),
+                param_spaces.get('extra_trees_reg', {}),
+                param_default.get('extra_trees_reg', {}),
             ),
             'lgbm': (
                 LGBMRegressor,

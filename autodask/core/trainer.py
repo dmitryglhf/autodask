@@ -4,7 +4,7 @@ import numpy as np
 
 # import dask.array as da
 
-from core.bee_algorithm import BeeColonyOptimizer
+from core.tuner import BeeColonyOptimizer
 from utils.log import get_logger
 from repository.model_repository import AtomizedModel
 from dask_ml.model_selection import train_test_split

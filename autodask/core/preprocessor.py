@@ -6,6 +6,8 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 
+from utils.log import get_logger
+
 
 class Preprocessor(BaseEstimator, TransformerMixin):
     """
@@ -51,6 +53,8 @@ class Preprocessor(BaseEstimator, TransformerMixin):
         self.numeric_features = []
         self.categorical_features = []
 
+        self.log = get_logger(self.__class__.__name__)
+
     def fit(self, X, y=None):
         """
         Fit the preprocessing pipeline to the input DataFrame.
@@ -64,7 +68,9 @@ class Preprocessor(BaseEstimator, TransformerMixin):
             Not used, present for API consistency.
         """
         if not isinstance(X, pd.DataFrame):
-            raise ValueError("Input must be a pandas DataFrame.")
+            X = pd.DataFrame(data=X)
+
+        self.log.info('Starting features preprocessing...')
 
         self.numeric_features = X.select_dtypes(include=[np.number]).columns.tolist()
         self.categorical_features = X.select_dtypes(include=['object', 'category', 'bool']).columns.tolist()
@@ -81,7 +87,7 @@ class Preprocessor(BaseEstimator, TransformerMixin):
             cat_steps = [('imputer', SimpleImputer(strategy=self.categorical_strategy, fill_value='missing'))]
 
             if self.encoding == 'onehot':
-                cat_steps.append(('encoder', OneHotEncoder(handle_unknown='ignore', sparse=False)))
+                cat_steps.append(('encoder', OneHotEncoder(handle_unknown='ignore')))
             elif self.encoding == 'ordinal':
                 cat_steps.append(('encoder', OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)))
             else:
@@ -115,6 +121,7 @@ class Preprocessor(BaseEstimator, TransformerMixin):
         """
         if self.transformer is None:
             raise RuntimeError("The transformer has not been fitted yet.")
+        self.log.info('Features preprocessing finished')
         return self.transformer.transform(X)
 
     def get_feature_names(self):

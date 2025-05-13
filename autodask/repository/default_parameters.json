@@ -10,17 +10,6 @@
     "positive": false
   },
   "xgboost_clf": {
-    "verbose": 0,
-    "learning_rate": 0.3,
-    "max_depth": 6,
-    "n_estimators": 100,
-    "subsample": 1.0,
-    "colsample_bytree": 1.0,
-    "gamma": 0,
-    "min_child_weight": 1
-  },
-  "xgboost_reg": {
-    "verbose": 0,
     "learning_rate": 0.3,
     "max_depth": 6,
     "n_estimators": 100,
@@ -28,20 +17,20 @@
     "colsample_bytree": 1.0,
     "gamma": 0,
     "min_child_weight": 1,
-    "objective": "reg:squarederror"
+    "verbose": 0
+  },
+  "xgboost_reg": {
+    "learning_rate": 0.3,
+    "max_depth": 6,
+    "n_estimators": 100,
+    "subsample": 1.0,
+    "colsample_bytree": 1.0,
+    "gamma": 0,
+    "min_child_weight": 1,
+    "objective": "reg:squarederror",
+    "verbose": 0
   },
   "lgbm_clf": {
-    "verbose": -1,
-    "learning_rate": 0.1,
-    "n_estimators": 100,
-    "num_leaves": 31,
-    "max_depth": -1,
-    "min_child_samples": 20,
-    "subsample": 1.0,
-    "colsample_bytree": 1.0
-  },
-  "lgbm_reg": {
-    "verbose": -1,
     "learning_rate": 0.1,
     "n_estimators": 100,
     "num_leaves": 31,
@@ -49,20 +38,20 @@
     "min_child_samples": 20,
     "subsample": 1.0,
     "colsample_bytree": 1.0,
-    "objective": "regression"
+    "verbose": -1
+  },
+  "lgbm_reg": {
+    "learning_rate": 0.1,
+    "n_estimators": 100,
+    "num_leaves": 31,
+    "max_depth": -1,
+    "min_child_samples": 20,
+    "subsample": 1.0,
+    "colsample_bytree": 1.0,
+    "objective": "regression",
+    "verbose": -1
   },
   "catboost_clf": {
-    "verbose": 0,
-    "iterations": 1000,
-    "learning_rate": 0.03,
-    "depth": 6,
-    "l2_leaf_reg": 3.0,
-    "border_count": 254,
-    "bagging_temperature": 1.0,
-    "random_strength": 1.0
-  },
-  "catboost_reg": {
-    "verbose": 0,
     "iterations": 1000,
     "learning_rate": 0.03,
     "depth": 6,
@@ -70,7 +59,18 @@
     "border_count": 254,
     "bagging_temperature": 1.0,
     "random_strength": 1.0,
-    "loss_function": "RMSE"
+    "verbose": 0
+  },
+  "catboost_reg": {
+    "iterations": 1000,
+    "learning_rate": 0.03,
+    "depth": 6,
+    "l2_leaf_reg": 3.0,
+    "border_count": 254,
+    "bagging_temperature": 1.0,
+    "random_strength": 1.0,
+    "loss_function": "RMSE",
+    "verbose": 0
   },
   "extra_trees_clf": {
     "n_estimators": 100,

@@ -8,7 +8,7 @@ def get_logger(
         logger_name: str,
         log_dir='adsk_logs',
         level=logging.INFO,
-        log_format: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        log_format: str = '%(asctime)s - %(name)s - %(message)s',
         rotation_bytes: int = 5_242_880,  # 5MB
         backup_count: int = 3
 ) -> logging.Logger:

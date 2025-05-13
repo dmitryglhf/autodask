@@ -4,7 +4,9 @@ import numpy as np
 import pandas as pd
 from distributed import Client, LocalCluster
 
+from joblib import dump, load
 from core.blender import WeightedAverageBlender
+from core.preprocessor import Preprocessor
 from core.trainer import Trainer
 from utils.log import get_logger
 from utils.regular_functions import is_classification_task, get_n_classes
@@ -45,17 +47,20 @@ class AutoDask:
         if is_classification_task(self.task):
             self.n_classes = get_n_classes(y)
             if self.n_classes == 2:
-                self.log.info(f"Task: binary {self.task}\n")
+                self.log.info(f"Task: binary {self.task}")
             elif self.n_classes > 2:
-                self.log.info(f"Task: multiclass {self.task}\n")
+                self.log.info(f"Task: multiclass {self.task}")
             else:
                 raise ValueError(f"Obtained {self.n_classes}. Unable to classify.")
 
-        self.log.info("Starting Trainer with listed constraints:")
-        self.log.info(f"- time: {self.time_limit:.2f} seconds")
-        self.log.info(f"- CPU: {self.n_jobs} cores")
+        self.log.info("Obtained constraints:")
+        self.log.info(f"time: {self.time_limit:.2f} seconds")
+        self.log.info(f"CPU: {self.n_jobs} cores")
         if self.models is not None:
             self.log.info(f"Models to be considered: {self.models}")
+
+        prp = Preprocessor()
+        X = prp.fit(X).transform(X)
 
         trainer = Trainer(
             task=self.task,
@@ -79,7 +84,7 @@ class AutoDask:
             metric=self.metric,
             n_classes=self.n_classes
         )
-        self.ensemble.fit(y)
+        self.ensemble.fit(X, y)
 
         self._shutdown_dask_server()
         return self
@@ -94,12 +99,12 @@ class AutoDask:
         return self.ensemble
 
     def save(self, path):
-        """Implementation for saving the model (unsupported yet)"""
-        import pickle
+        """Implementation for saving the model"""
+        dump(self.ensemble, path)
 
     def load_model(self, path):
-        """Implementation for loading the model (unsupported yet)"""
-        import pickle
+        """Implementation for loading the ensemble"""
+        self.ensemble = load(path)
 
     def _create_dask_server(self):
         self.log.info('Creating Dask Server...')
@@ -124,7 +129,7 @@ class AutoDask:
         self.dask_client = Client(cluster)
         self.dask_cluster = cluster
         if cluster: self.log.info('Dask Server successfully created')
-        self.log.info('Dashboard is available at http://localhost:8787/status.')
+        self.log.info('Dashboard is available at http://localhost:8787/status')
 
     def _shutdown_dask_server(self):
         self.log.info('Shutting down Dask Server...')
