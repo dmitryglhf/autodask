@@ -118,9 +118,9 @@ class Trainer:
 
             # Store model with its score
             fitted_models.append({
-                'model': (model, name),
-                'score': validation_score if self.maximize_metric else -validation_score,
-                'preds': y_pred
+                'model': model,
+                'name': name,
+                'score': validation_score if self.maximize_metric else -validation_score
             })
 
         # Sort models by performance

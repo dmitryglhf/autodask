@@ -25,7 +25,7 @@ class EnsembleBlender(BaseEstimator):
         self.log = get_logger(self.__class__.__name__)
 
         # Setup metric function
-        self.score_func, self.metric_name, self.maximize_metric = (
+        self.score_func, self.metric_name, self.is_maximize_metric = (
             setup_metric(metric_name=metric, task=task)
         )
         self.features = self._get_joined_features()
@@ -33,17 +33,20 @@ class EnsembleBlender(BaseEstimator):
         self.n_samples = self._get_num_samples()
         self.n_classes = n_classes
 
-    def fit(self, y):
+    def fit(self, X, y):
         """Weights optimization"""
-        # if self.num_models == 1:
-        #     self.log.info(f"Weights: {1}*{model}")  # или добавить эту обработку на уровень выше
+        if self.n_models == 1:
+            self.weights = 1.0
+            self.log.info(f"Weights: {self.weights}*{self.fitted_models[0]['model'][1]}")
+            return self
 
-        self.log.info(f"Starting weights optimization for models {...}")
+        self.log.info(f"Starting weights optimization for models:"
+                      f" {[model['model'][1] for model in self.fitted_models]}")
 
         if is_classification_task(self.task):
-            weighted_pred = self.get_classification_score
+            weighted_pred = self.apply_weights_classification
         else:
-            weighted_pred = self.get_regression_score
+            weighted_pred = self.apply_weights_regression
 
         n_models = len(self.fitted_models)
         weights = np.ones(n_models) / n_models
@@ -57,7 +60,7 @@ class EnsembleBlender(BaseEstimator):
                     w = weights.copy()
                     w[i] = wi
                     w /= w.sum()
-                    y_pred = weighted_pred(w, y)
+                    y_pred = weighted_pred(w, self.features, y)
                     return self.score_func(y, y_pred)
 
                 # Coordinate descent optimization for w_i
@@ -70,19 +73,44 @@ class EnsembleBlender(BaseEstimator):
             if np.max(np.abs(weights - old_weights)) < self.tol:
                 break
 
-        self.log.info(f"Weights-models pairs: {...}")
-        return weights
+        model_weight_dict = dict(zip([model['model'] for model in self.fitted_models], weights.round(6)))
+        self.log.info(f"Obtained weight-model pairs: {model_weight_dict}")
+        self.weights = weights
+        return self
 
     def predict(self, X):
         """Return predictions as weighted average"""
         if not self.fitted_models:
             raise ValueError("No models in ensemble")
 
-        # здесь каждая из моделей должны сделать предскзание на X_test
-        # и затем нужно умножить их на веса, полученные в fit
+        # Get predictions from all models and join it to the array by columns
+        if is_classification_task(self.task):
+            preds_list = [model['model'][0].predict_proba(X) for model in self.fitted_models]
+            preds_array = pd.concat(preds_list, axis=1)
+            y_pred, _ = self.apply_weights_classification(self.weights, preds_array)
+        else:
+            preds_list = [model['model'][0].predict(X) for model in self.fitted_models]
+            preds_array = pd.concat(preds_list, axis=1)
+            y_pred = self.apply_weights_regression(self.weights, preds_array)
 
+        return y_pred
 
-    def get_classification_score(self, weights: np.ndarray, features, y_pred=None):
+    def predict_proba(self, X):
+        """Return probabilities as weighted average"""
+        if not self.fitted_models:
+            raise ValueError("No models in ensemble")
+
+        # Get predictions from all models and join it to the array by columns
+        if is_classification_task(self.task):
+            preds_list = [model['model'][0].predict_proba(X) for model in self.fitted_models]
+            preds_array = pd.concat(preds_list, axis=1)
+            _, probs = self.apply_weights_classification(self.weights, preds_array)
+        else:
+            raise ValueError(f"This method is unavailable for task {self.task}")
+
+        return probs
+
+    def apply_weights_classification(self, weights: np.ndarray, features, target=None):
         probs = np.zeros((self.n_samples, self.n_classes))
         for class_idx in range(self.n_classes):
             # Get prediction for current class from all models
@@ -94,22 +122,21 @@ class EnsembleBlender(BaseEstimator):
 
         labels = np.argmax(probs, axis=1)
 
-        # If `target` is None, return predicted labels only (inference mode).
+        # If 'target' is None, return predicted labels only (inference mode).
         # Otherwise, proceed with optimization (training mode).
-        if y_pred is not None:
-            return self.score_func(y_pred, labels)
+        if target is not None:
+            return self.score_func(target, labels)
         else:
             return labels, probs
 
-
-    def get_regression_score(self, weights: np.ndarray, features, y_true):
+    def apply_weights_regression(self, weights: np.ndarray, features, target=None):
         # Get predictions by applying the weights
         predictions = np.dot(features, weights)
 
-        # If `target` is None, return predicted labels only (inference mode).
+        # If 'target' is None, return predicted labels only (inference mode).
         # Otherwise, proceed with optimization (training mode).
-        if y_true is not None:
-            return -self.score_func(y_true, predictions) # minimizing operation for regression
+        if target is not None:
+            return -self.score_func(target, predictions) # minimizing operation for regression
         else:
             return predictions
 
