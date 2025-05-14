@@ -46,7 +46,7 @@ class AtomizedModel:
                 param_spaces.get('l2_logreg', {}),
                 param_default.get('l2_logreg', {}),
             ),
-            'extra_tree': (
+            'extra_trees': (
                 ExtraTreesClassifier,
                 param_spaces.get('extra_trees_clf', {}),
                 param_default.get('extra_trees_clf', {}),
@@ -82,7 +82,7 @@ class AtomizedModel:
                 param_spaces.get('l2_linreg', {}),
                 param_default.get('l2_linreg', {}),
             ),
-            'extra_tree': (
+            'extra_trees': (
                 ExtraTreesRegressor,
                 param_spaces.get('extra_trees_reg', {}),
                 param_default.get('extra_trees_reg', {}),

@@ -42,7 +42,7 @@ class Trainer:
             setup_metric(metric_name=metric, task=task)
         )
 
-    def launch(self, X, y, validation_data=None):
+    def launch(self, X_train, y_train, validation_data:tuple=None):
         self.start_time = time.time()
 
         # Handle validation data
@@ -51,10 +51,8 @@ class Trainer:
         else:
             # Split data if validation set not provided
             X_train, X_val, y_train, y_val = train_test_split(
-                X, y, test_size=0.1, random_state=101, shuffle=True
+                X_train, y_train, test_size=0.1, random_state=101, shuffle=True
             )
-            X, X_val = X_train, X_val
-            y, y_val = y_train, y_val
 
         # Get models based on task or provided model names
         models = self._get_models()
@@ -85,8 +83,8 @@ class Trainer:
                 best_params, best_score = bco.optimize(
                     model_class=model_class,
                     param_space=param_space,
-                    X_train=X,
-                    y_train=y,
+                    X_train=X_train,
+                    y_train=y_train,
                     X_val=X_val,
                     y_val=y_val,
                     metric_func=self.score_func,
@@ -103,7 +101,7 @@ class Trainer:
                 self.log.info(f"Obtained parameters: {param_default}")
                 model = model_class(**param_default)
 
-            model.fit(X, y)
+            model.fit(X_train, y_train)
 
             # Evaluate and log performance
             if is_classification_task(self.task):
