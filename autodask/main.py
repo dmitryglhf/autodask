@@ -39,13 +39,15 @@ class AutoDask:
         self.log = get_logger(self.__class__.__name__)
         self.n_classes = None
 
-    def fit(self, X: Union[pd.DataFrame, np.ndarray],
-            y: Union[pd.DataFrame, np.ndarray],
+        self.prep = None
+
+    def fit(self, X_train: Union[pd.DataFrame, np.ndarray],
+            y_train: Union[pd.DataFrame, np.ndarray],
             validation_data:tuple[Union[pd.DataFrame, np.ndarray]]=None):
         self._create_dask_server()
 
         if is_classification_task(self.task):
-            self.n_classes = get_n_classes(y)
+            self.n_classes = get_n_classes(y_train)
             if self.n_classes == 2:
                 self.log.info(f"Task: binary {self.task}")
             elif self.n_classes > 2:
@@ -59,8 +61,9 @@ class AutoDask:
         if self.models is not None:
             self.log.info(f"Models to be considered: {self.models}")
 
-        prp = Preprocessor()
-        X = prp.fit(X).transform(X)
+        self.prep = Preprocessor(encoding='onehot', target_encoding=True)
+        X_train_prep, y_train_enc = self.prep.fit_transform(X_train, y_train)
+        self.log.info('Features preprocessing finished')
 
         trainer = Trainer(
             task=self.task,
@@ -74,7 +77,7 @@ class AutoDask:
         )
 
         best_models = trainer.launch(
-            X, y,
+            X_train_prep, y_train_enc,
             validation_data=validation_data,
         )
 
@@ -84,18 +87,21 @@ class AutoDask:
             metric=self.metric,
             n_classes=self.n_classes
         )
-        self.ensemble.fit(X, y)
+        self.ensemble.fit(X_train_prep, y_train_enc)
 
         self._shutdown_dask_server()
         return self
 
-    def predict(self, X):
-        return self.ensemble.predict(X)
+    def predict(self, X_test):
+        X_test_prep = self.prep.transform(X_test)
+        y_pred_enc = self.ensemble.predict(X_test_prep)
+        return self.prep.inverse_transform_target(y_pred_enc)
 
-    def predict_proba(self, X):
-        return self.ensemble.predict_proba(X)
+    def predict_proba(self, X_test):
+        X_test_prep = self.prep.transform(X_test)
+        return self.ensemble.predict_proba(X_test_prep)
 
-    def best_model(self):
+    def fitted_ensemble(self):
         return self.ensemble
 
     def save(self, path):
