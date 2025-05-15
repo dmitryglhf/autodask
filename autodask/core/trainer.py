@@ -44,6 +44,12 @@ class Trainer:
         metric_name (str): Name of the evaluation metric
         maximize_metric (bool): Whether higher metric values are better
         log (Logger): Logger instance for tracking progress
+
+    Example:
+        >>> trainer = Trainer(task='classification', cv_folds=5)
+        >>> models = trainer.launch(X_train, y_train)
+        >>> # With validation data
+        >>> models = trainer.launch(X_train, y_train, validation_data=(X_val, y_val))
     """
 
     def __init__(self,
@@ -88,12 +94,6 @@ class Trainer:
 
         Returns:
             list: Sorted list of dictionaries containing trained models, their names and scores
-
-        Example:
-            >>> trainer = Trainer(task='classification', cv_folds=5)
-            >>> models = trainer.launch(X_train, y_train)
-            >>> # With validation data
-            >>> models = trainer.launch(X_train, y_train, validation_data=(X_val, y_val))
         """
         self.start_time = time.time()
 
