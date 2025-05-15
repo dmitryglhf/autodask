@@ -51,6 +51,7 @@ class AutoDask:
         self._create_dask_server()
 
         if is_classification_task(self.task):
+            is_clf = True
             self.n_classes = get_n_classes(y_train)
             if self.n_classes == 2:
                 self.log.info(f"Task: binary {self.task}")
@@ -58,6 +59,8 @@ class AutoDask:
                 self.log.info(f"Task: multiclass {self.task}")
             else:
                 raise ValueError(f"Obtained {self.n_classes}. Unable to classify.")
+        else:
+            is_clf = False
 
         self.log.info("Obtained constraints:")
         self.log.info(f"time: {self.time_limit:.2f} seconds")
@@ -65,7 +68,7 @@ class AutoDask:
         if self.models is not None:
             self.log.info(f"Models to be considered: {self.models}")
 
-        self.prep = Preprocessor(encoding='onehot', target_encoding=True)
+        self.prep = Preprocessor()
         X_train_prep, y_train_enc = self.prep.fit_transform(X_train, y_train)
         self.log.info('Features preprocessing finished')
 
@@ -101,7 +104,7 @@ class AutoDask:
     def predict(self, X_test):
         X_test_prep = self.prep.transform(X_test)
         y_pred_enc = self.ensemble.predict(X_test_prep)
-        return self.prep.inverse_transform_target(y_pred_enc)
+        return self.prep.decode_target(y_pred_enc)
 
     def predict_proba(self, X_test):
         X_test_prep = self.prep.transform(X_test)

@@ -97,7 +97,7 @@ class Preprocessor(BaseEstimator, TransformerMixin):
             return y
         return self.target_encoder_.transform(y)
 
-    def inverse_transform_target(self, y_encoded):
+    def decode_target(self, y_encoded):
         if self.target_encoder_ is None:
             return y_encoded
         return self.target_encoder_.inverse_transform(y_encoded)

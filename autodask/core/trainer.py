@@ -1,6 +1,8 @@
 import time
+from typing import Union
 
 import numpy as np
+import pandas as pd
 
 # import dask.array as da
 
@@ -46,7 +48,13 @@ class Trainer:
             setup_metric(metric_name=metric, task=task)
         )
 
-    def launch(self, X_train, y_train, validation_data:tuple=None):
+    def launch(self,
+               X_train: Union[pd.DataFrame, np.ndarray],
+               y_train: Union[pd.DataFrame, np.ndarray],
+               validation_data:tuple=None):
+        if isinstance(X_train, np.ndarray): X_train = pd.DataFrame(X_train)
+        if isinstance(y_train, np.ndarray): y_train = pd.DataFrame(y_train)
+
         self.start_time = time.time()
 
         # Handle validation data
@@ -82,7 +90,7 @@ class Trainer:
 
             self.log.info(f"Fitting {name} model...")
 
-            # Get remaining time for this model
+            # Get remaining time for current model
             remaining_time = None
             if self.time_limit:
                 elapsed = time.time() - self.start_time
@@ -112,8 +120,10 @@ class Trainer:
                 cv_scores = []
 
                 for fold_id, (tr_idx, val_idx) in enumerate(kf.split(X_train, y_train)):
-                    X_tr, y_tr = X_train[tr_idx], y_train[tr_idx]
-                    X_val, y_val = X_train[val_idx], y_train[val_idx]
+                    X_tr = X_train.iloc[tr_idx]
+                    y_tr = y_train.iloc[tr_idx]
+                    X_val = X_train.iloc[val_idx]
+                    y_val = y_train.iloc[val_idx]
 
                     model = model_class(**model_params)
                     model.fit(X_tr, y_tr)
