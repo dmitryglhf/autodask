@@ -10,7 +10,7 @@ from catboost import CatBoostClassifier, CatBoostRegressor
 
 
 class AtomizedModel:
-    """Repository of machine learning models with their hyperparameter spaces."""
+    """Repository of ml models with their default hyperparameters and hyperparameters spaces."""
 
     # Path to the model parameters JSON file
     SEARCH_PARAMS_PATH = os.path.join(os.path.dirname(__file__), 'search_parameters.json')

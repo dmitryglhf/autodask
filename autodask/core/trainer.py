@@ -19,6 +19,33 @@ warnings.filterwarnings('ignore')
 
 
 class Trainer:
+    """Orchestrates model training, hyperparameter tuning and evaluation.
+
+    This class handles the complete model training pipeline including:
+    - Model selection based on task type
+    - Hyperparameter optimization using Bee Colony Algorithm
+    - Cross-validation or hold-out validation
+    - Model evaluation and ranking
+
+    Args:
+        task (str): Machine learning task type ('classification' or 'regression')
+        with_tuning (bool, optional): Whether to perform hyperparameter tuning. Defaults to None.
+        time_limit (int, optional): Maximum training time in seconds. Defaults to None.
+        metric (str, optional): Evaluation metric to optimize. Defaults to None.
+        cv_folds (int, optional): Number of cross-validation folds. Defaults to None.
+        seed (int, optional): Random seed for reproducibility. Defaults to None.
+        optimization_rounds (int, optional): Number of optimization rounds for tuning. Defaults to 30.
+        max_ensemble_models (int, optional): Maximum number of models to keep. Defaults to None.
+        models (list, optional): Specific models to use. If None, uses all available. Defaults to None.
+        bco_params (dict, optional): Parameters for Bee Colony Optimizer. Defaults to None.
+
+    Attributes:
+        score_func (callable): Metric scoring function
+        metric_name (str): Name of the evaluation metric
+        maximize_metric (bool): Whether higher metric values are better
+        log (Logger): Logger instance for tracking progress
+    """
+
     def __init__(self,
                  task: str,
                  with_tuning=None,
@@ -49,12 +76,25 @@ class Trainer:
         )
 
     def launch(self,
-               X_train: Union[pd.DataFrame, np.ndarray],
-               y_train: Union[pd.DataFrame, np.ndarray],
+               X_train: Union[pd.DataFrame],
+               y_train: Union[np.ndarray],
                validation_data:tuple=None):
-        if isinstance(X_train, np.ndarray): X_train = pd.DataFrame(X_train)
-        if isinstance(y_train, np.ndarray): y_train = pd.DataFrame(y_train)
+        """Execute the complete training pipeline.
 
+        Args:
+            X_train (pd.DataFrame): Training features
+            y_train (np.ndarray): Training targets
+            validation_data (tuple, optional): Optional (X_val, y_val) for hold-out validation
+
+        Returns:
+            list: Sorted list of dictionaries containing trained models, their names and scores
+
+        Example:
+            >>> trainer = Trainer(task='classification', cv_folds=5)
+            >>> models = trainer.launch(X_train, y_train)
+            >>> # With validation data
+            >>> models = trainer.launch(X_train, y_train, validation_data=(X_val, y_val))
+        """
         self.start_time = time.time()
 
         # Handle validation data
@@ -99,6 +139,7 @@ class Trainer:
             # Optimize hyperparameters with bee colony algorithm
             if self.with_tuning:
                 self.log.info(f"Optimizing {name} model...")
+
                 best_params, best_score = bco.optimize(
                     model_class=model_class,
                     param_space=param_space,
@@ -121,9 +162,9 @@ class Trainer:
 
                 for fold_id, (tr_idx, val_idx) in enumerate(kf.split(X_train, y_train)):
                     X_tr = X_train.iloc[tr_idx]
-                    y_tr = y_train.iloc[tr_idx]
+                    y_tr = y_train[tr_idx]
                     X_val = X_train.iloc[val_idx]
-                    y_val = y_train.iloc[val_idx]
+                    y_val = y_train[val_idx]
 
                     model = model_class(**model_params)
                     model.fit(X_tr, y_tr)

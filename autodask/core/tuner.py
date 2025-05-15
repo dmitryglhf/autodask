@@ -8,6 +8,41 @@ warnings.filterwarnings('ignore')
 
 
 class BeeColonyOptimizer:
+    """Implementation of the Bee Colony Optimization (BCO) algorithm for hyperparameter tuning.
+
+    This class implements a nature-inspired optimization algorithm that mimics the foraging
+    behavior of honey bees to find optimal hyperparameters for machine learning models.
+
+    Args:
+        employed_bees (int, optional): Number of employed bees exploring solutions. Defaults to 20.
+        onlooker_bees (int, optional): Number of onlooker bees exploiting promising solutions. Defaults to 10.
+        scout_bees (int, optional): Number of scout bees searching for new solutions. Defaults to 5.
+        abandonment_limit (int, optional): Number of trials before abandoning a solution. Defaults to 10.
+        exploration_rate (float, optional): Probability of random exploration vs local search. Defaults to 0.3.
+
+    Attributes:
+        solutions (list): Current population of solutions (parameters and scores)
+        solution_trials (dict): Tracking of how many times each solution hasn't improved
+        log (Logger): Logger instance for tracking progress
+
+    Example:
+        >>> param_space = {
+        ...     'n_estimators': (50, 200),
+        ...     'max_depth': [3, 5, 7, None],
+        ...     'learning_rate': (0.01, 0.2)
+        ... }
+        >>> bco = BeeColonyOptimizer(employed_bees=15, onlooker_bees=10)
+        >>> best_params, best_score = bco.optimize(
+        ...     model_class=GradientBoostingClassifier,
+        ...     param_space=param_space,
+        ...     X_train=X_train, y_train=y_train,
+        ...     X_val=X_val, y_val=y_val,
+        ...     metric_func=accuracy_score,
+        ...     maximize=True,
+        ...     rounds=20
+        ... )
+    """
+
     def __init__(self,
                  employed_bees=20,
                  onlooker_bees=10,
@@ -27,8 +62,30 @@ class BeeColonyOptimizer:
 
     def optimize(self, model_class, param_space, X_train, y_train, X_val, y_val,
                  metric_func, maximize=True, rounds=30, time_limit=None):
-        """
-        Implement bee colony optimization for hyperparameter tuning
+        """Run the bee colony optimization algorithm.
+
+        Args:
+            model_class: The machine learning model class to optimize
+            param_space (dict): Parameter search space in format:
+                {param_name: (min, max)} for continuous or
+                {param_name: [val1, val2]} for discrete
+            X_train: Training features
+            y_train: Training targets
+            X_val: Validation features
+            y_val: Validation targets
+            metric_func (callable): Scoring function (y_true, y_pred) -> score
+            maximize (bool, optional): Whether to maximize the metric. Defaults to True.
+            rounds (int, optional): Number of optimization rounds. Defaults to 30.
+            time_limit (int, optional): Maximum time in seconds. Defaults to None.
+
+        Returns:
+            tuple: (best_params, best_score) found during optimization
+
+        Note:
+            The optimization process consists of three phases:
+            1. Employed bees explore neighborhood of existing solutions
+            2. Onlooker bees focus on promising solutions
+            3. Scout bees find new random solutions when existing ones stagnate
         """
         start_time = time.time()
         best_params = None
@@ -138,14 +195,31 @@ class BeeColonyOptimizer:
         return best_params, best_score
 
     def _get_params_key(self, params):
-        """Convert parameters dictionary to a stable string key"""
+        """Create a stable hashable key for parameter dictionaries.
+
+        Args:
+            params (dict): Parameter dictionary
+
+        Returns:
+            str: String representation of sorted parameter items
+        """
         # Sort items to ensure consistent string representation
         items = sorted(params.items())
         # Create a tuple of tuples that can be used as a dictionary key
         return str(items)
 
     def _generate_random_params(self, param_space):
-        """Generate random parameters from the parameter space"""
+        """Generate random parameters from the parameter space.
+
+        Args:
+            param_space (dict): Parameter search space definition
+
+        Returns:
+            dict: Randomly generated parameter set
+
+        Note:
+            Handles both continuous (tuple ranges) and discrete (list) parameters
+        """
         params = {}
         for param_name, param_range in param_space.items():
             if isinstance(param_range, list):
@@ -160,7 +234,19 @@ class BeeColonyOptimizer:
         return params
 
     def _explore_neighborhood(self, params, param_space):
-        """Explore the neighborhood of a solution"""
+        """Generate a new solution by exploring neighborhood of current solution.
+
+        Args:
+            params (dict): Current parameter set
+            param_space (dict): Parameter search space definition
+
+        Returns:
+            dict: New parameter set
+
+        Note:
+            With probability exploration_rate does random exploration,
+            otherwise makes small adjustments to existing parameters
+        """
         new_params = params.copy()
         param_to_change = np.random.choice(list(params.keys()))
 
@@ -188,7 +274,23 @@ class BeeColonyOptimizer:
         return new_params
 
     def _evaluate_params(self, model_class, params, X_train, y_train, X_val, y_val, metric_func):
-        """Evaluate a parameter set by training and validating a model"""
+        """Evaluate a parameter set by training and validating a model.
+
+        Args:
+            model_class: Model class to instantiate
+            params (dict): Parameters for model initialization
+            X_train: Training features
+            y_train: Training targets
+            X_val: Validation features
+            y_val: Validation targets
+            metric_func (callable): Scoring function
+
+        Returns:
+            float: Evaluation score
+
+        Note:
+            Returns -inf for invalid parameter sets to handle optimization failures
+        """
         try:
             model = model_class(**params)
             model.fit(X_train, y_train)

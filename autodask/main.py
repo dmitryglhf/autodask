@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from distributed import Client, LocalCluster
 
-from joblib import dump, load
+from pickle import dump, load
 from core.blender import WeightedAverageBlender
 from core.preprocessor import Preprocessor
 from core.trainer import Trainer
@@ -13,6 +13,38 @@ from utils.regular_functions import is_classification_task, get_n_classes
 
 
 class AutoDask:
+    """Orchestrating class for AutoDask.
+
+    This class provides an end-to-end automated machine learning solution,
+    handling preprocessing, model selection, hyperparameter tuning, and ensemble construction.
+    It supports both classification and regression tasks with parallel execution using Dask.
+
+    Args:
+        task (str): The machine learning task type. Supported values: 'classification', 'regression'.
+        n_jobs (int, optional): Number of parallel jobs to run. Defaults to 4.
+        with_tuning (bool, optional): Whether to perform hyperparameter tuning. Defaults to False.
+        time_limit (int, optional): Maximum time in seconds for the automl process. Defaults to 300 (5 minutes).
+        metric (str, optional): Evaluation metric to optimize. If None, defaults to task-appropriate metric.
+        cv_folds (int, optional): Number of cross-validation folds. Defaults to 5.
+        seed (int, optional): Random seed for reproducibility. Defaults to 101.
+        optimization_rounds (int, optional): Number of optimization rounds for hyperparameter tuning. Defaults to 30.
+        max_ensemble_models (int, optional): Maximum number of models in final ensemble. Defaults to 3.
+        preprocess (bool, optional): Whether to apply automatic preprocessing. Defaults to True.
+        models (list, optional): Custom list of models to consider. If None, uses default model library.
+        bco_params (dict, optional): Parameters for bee colony optimization. Defaults to empty dict.
+
+    Attributes:
+        ensemble: The final ensemble model after fitting.
+        n_classes: Number of classes (for classification tasks).
+        preprocessor: Fitted preprocessing pipeline.
+        log: Logger instance for tracking progress.
+
+    Example:
+        >>> adsk = AutoDask(task='classification', n_jobs=4, with_tuning=True)
+        >>> adsk.fit(X_train, y_train)
+        >>> predictions = adsk.predict(X_test)
+    """
+
     def __init__(
             self,
             task: str,
@@ -24,6 +56,7 @@ class AutoDask:
             seed=101,
             optimization_rounds=30,
             max_ensemble_models=3,
+            preprocess=True,
             models=None,
             bco_params=None
     ):
@@ -38,29 +71,41 @@ class AutoDask:
         self.max_ensemble_models = max_ensemble_models
         self.models = models
         self.bco_params = bco_params or {}
-
         self.ensemble = None
-        self.log = get_logger(self.__class__.__name__)
         self.n_classes = None
 
-        self.prep = None
+        self.preprocess = preprocess
+        self.preprocessor = None
 
-    def fit(self, X_train: Union[pd.DataFrame, np.ndarray],
-            y_train: Union[pd.DataFrame, np.ndarray],
+        self.log = get_logger(self.__class__.__name__)
+
+    def fit(self, X_train: Union[pd.DataFrame, np.ndarray, tuple, dict, list],
+            y_train: Union[pd.DataFrame, np.ndarray, tuple, dict, list, str],
             validation_data:tuple[Union[pd.DataFrame, np.ndarray]]=None):
-        self._create_dask_server()
+        """Train the AutoDask model on the given training data.
 
-        if is_classification_task(self.task):
-            is_clf = True
-            self.n_classes = get_n_classes(y_train)
-            if self.n_classes == 2:
-                self.log.info(f"Task: binary {self.task}")
-            elif self.n_classes > 2:
-                self.log.info(f"Task: multiclass {self.task}")
-            else:
-                raise ValueError(f"Obtained {self.n_classes}. Unable to classify.")
-        else:
-            is_clf = False
+        Args:
+            X_train: Training features. Can be:
+                - pandas DataFrame
+                - numpy array
+                - tuple/dict/list of arrays (for multi-input models)
+            y_train: Training target. Can be:
+                - pandas DataFrame/Series
+                - numpy array
+                - column name (str) if X_train is DataFrame
+            validation_data: Optional tuple (X_val, y_val) for validation.
+
+        Returns:
+            self: Returns the instance itself.
+
+        Example:
+            >>> adsk = AutoDask(task='classification')
+            >>> # Without validation data - k-fold cv
+            >>> adsk.fit(X_train, y_train)
+            >>> # With validation data - hold-out cv
+            >>> adsk.fit(X_train, y_train, validation_data=(X_val, y_val))
+        """
+        self._create_dask_server()
 
         self.log.info("Obtained constraints:")
         self.log.info(f"time: {self.time_limit:.2f} seconds")
@@ -68,9 +113,13 @@ class AutoDask:
         if self.models is not None:
             self.log.info(f"Models to be considered: {self.models}")
 
-        self.prep = Preprocessor()
-        X_train_prep, y_train_enc = self.prep.fit_transform(X_train, y_train)
-        self.log.info('Features preprocessing finished')
+        self._kind_clf(y_train)
+        if self.preprocess:
+            self.preprocessor = Preprocessor()
+            X_train, y_train = self.preprocessor.fit_transform(X_train, y_train)
+            self.log.info('Features preprocessing finished')
+
+        X_train, y_train = self._check_input_correctness(X_train, y_train)
 
         trainer = Trainer(
             task=self.task,
@@ -86,7 +135,7 @@ class AutoDask:
         )
 
         best_models = trainer.launch(
-            X_train_prep, y_train_enc,
+            X_train, y_train,
             validation_data=validation_data,
         )
 
@@ -96,29 +145,84 @@ class AutoDask:
             metric=self.metric,
             n_classes=self.n_classes
         )
-        self.ensemble.fit(X_train_prep, y_train_enc)
+        self.ensemble.fit(X_train, y_train)
 
         self._shutdown_dask_server()
         return self
 
     def predict(self, X_test):
-        X_test_prep = self.prep.transform(X_test)
-        y_pred_enc = self.ensemble.predict(X_test_prep)
-        return self.prep.decode_target(y_pred_enc)
+        """Make predictions on new data using the trained ensemble.
+
+        Args:
+            X_test: Input features to predict on. Same formats as X_train in fit().
+
+        Returns:
+            Array of predictions. For classification, returns class labels.
+            For regression, returns continuous values.
+        """
+        X_test, _ = self._check_input_correctness(X_test, y=None)
+        if self.preprocessor:
+            X_test_prep = self.preprocessor.transform(X_test)
+            y_pred_enc = self.ensemble.predict(X_test_prep)
+            return self.preprocessor.decode_target(y_pred_enc)
+        else:
+            return self.ensemble.predict(X_test)
 
     def predict_proba(self, X_test):
-        X_test_prep = self.prep.transform(X_test)
-        return self.ensemble.predict_proba(X_test_prep)
+        """Make predictions on new data using the trained ensemble.
 
-    def fitted_ensemble(self):
-        return self.ensemble
+        Args:
+            X_test: Input features to predict on. Same formats as X_train in fit().
+
+        Returns:
+            Array of predictions with class probabilities.
+        """
+        X_test, _ = self._check_input_correctness(X_test, y=None)
+        if self.preprocessor:
+            X_test_prep = self.preprocessor.transform(X_test)
+            return self.ensemble.predict_proba(X_test_prep)
+        else:
+            self.ensemble.predict_proba(X_test)
+
+    def get_fitted_ensemble(self):
+        """Get the trained ensemble model.
+
+        Returns:
+            WeightedAverageBlender: The fitted ensemble model.
+        """
+        if self.ensemble:
+            return self.ensemble
+
+    def get_fitted_preprocessor(self):
+        """Get the fitted preprocessing pipeline.
+
+        Returns:
+            Preprocessor: The fitted preprocessing pipeline.
+        """
+        if self.preprocessor:
+            return self.preprocessor
 
     def save(self, path):
-        """Implementation for saving the ensemble"""
+        """Save the trained ensemble to disk using joblib.
+
+        Args:
+            path: File path to save the model to.
+
+        Example:
+            >>> adsk.save('adsk_model.pkl')
+        """
         dump(self.ensemble, path)
 
     def load_model(self, path):
-        """Implementation for loading the ensemble"""
+        """Load a previously saved ensemble from disk.
+
+        Args:
+            path: File path to load the model from.
+
+        Example:
+            >>> adsk.load_model('adsk_model.pkl')
+            >>> adsk.predict(X_new)  # Can now make predictions
+        """
         self.ensemble = load(path)
 
     def _create_dask_server(self):
@@ -154,3 +258,25 @@ class AutoDask:
         if self.dask_cluster is not None:
             self.dask_cluster.close()
             del self.dask_cluster
+
+    def _check_input_correctness(self, X, y):
+        if not isinstance(X, pd.DataFrame) and X is not None:
+            X = pd.DataFrame(X)
+        if isinstance(y, str) and y is not None:
+            try:
+                y = X[y]
+            except:
+                raise ValueError(f"No column name {y}")
+        return X, y
+
+    def _kind_clf(self, y_train):
+        if is_classification_task(self.task):
+            self.n_classes = get_n_classes(y_train)
+            if self.n_classes == 2:
+                self.log.info(f"Task: binary {self.task}")
+            elif self.n_classes > 2:
+                self.log.info(f"Task: multiclass {self.task}")
+            else:
+                raise ValueError(f"Obtained {self.n_classes}. Unable to classify.")
+            return True
+        return False

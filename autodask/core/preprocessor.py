@@ -33,9 +33,6 @@ class Preprocessor(BaseEstimator, TransformerMixin):
         self.log = get_logger(self.__class__.__name__)
 
     def fit(self, X, y=None):
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(data=X)
-
         self.numeric_features_ = X.select_dtypes(include=[np.number]).columns.tolist()
         self.categorical_features_ = X.select_dtypes(
             include=['object', 'category', 'bool']).columns.tolist()
