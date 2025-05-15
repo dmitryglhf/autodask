@@ -7,7 +7,7 @@ import numpy as np
 from core.tuner import BeeColonyOptimizer
 from utils.log import get_logger
 from repository.model_repository import AtomizedModel
-from dask_ml.model_selection import train_test_split
+from sklearn.model_selection import KFold, StratifiedKFold
 
 import warnings
 
@@ -22,6 +22,8 @@ class Trainer:
                  with_tuning=None,
                  time_limit=None,
                  metric:str=None,
+                 cv_folds:int=None,
+                 seed:int=None,
                  optimization_rounds=30,
                  max_ensemble_models=None,
                  models=None,
@@ -29,6 +31,8 @@ class Trainer:
         self.task = task
         self.with_tuning = with_tuning
         self.time_limit = time_limit
+        self.cv_folds = cv_folds
+        self.seed = seed
         self.optimization_rounds = optimization_rounds
         self.max_ensemble_models = max_ensemble_models
         self.model_names = models
@@ -46,18 +50,25 @@ class Trainer:
         self.start_time = time.time()
 
         # Handle validation data
-        if validation_data:
+        if validation_data is not None:
+            # hold-out
             X_val, y_val = validation_data
+            kf = None
         else:
-            # Split data if validation set not provided
-            X_train, X_val, y_train, y_val = train_test_split(
-                X_train, y_train, test_size=0.1, random_state=101, shuffle=True
-            )
+            # k-fold
+            if is_classification_task(self.task):
+                kf = StratifiedKFold(n_splits=self.cv_folds,
+                                     shuffle=True,
+                                     random_state=self.seed)
+            else:
+                kf = KFold(n_splits=self.cv_folds,
+                           shuffle=True,
+                           random_state=self.seed)
 
         # Get models based on task or provided model names
         models = self._get_models()
 
-        self.log.info('Starting models training')
+        self.log.info(f'Starting models training (cv_folds = {self.cv_folds})')
         fitted_models = []
 
         # Initialize bee colony optimizer
@@ -66,7 +77,7 @@ class Trainer:
         # For each model, optimize hyperparameters and train
         for name, (model_class, param_space, param_default) in models.items():
             if self._check_time_limit():
-                self.log.info(f"Time limit reached.")
+                self.log.info(f"Time limit reached")
                 break
 
             self.log.info(f"Fitting {name} model...")
@@ -83,40 +94,52 @@ class Trainer:
                 best_params, best_score = bco.optimize(
                     model_class=model_class,
                     param_space=param_space,
-                    X_train=X_train,
-                    y_train=y_train,
-                    X_val=X_val,
-                    y_val=y_val,
+                    X_train=X_train, y_train=y_train,
+                    X_val=None, y_val=None,
                     metric_func=self.score_func,
                     maximize=self.maximize_metric,
                     rounds=self.optimization_rounds,
                     time_limit=remaining_time
                 )
 
-                self.log.info(f"Obtained optimized parameters: {best_params}")
-
                 # Train the model with best parameters
-                model = model_class(**best_params)
+                model_params = best_params
             else:
-                self.log.info(f"Obtained parameters: {param_default}")
-                model = model_class(**param_default)
+                model_params = param_default
 
-            model.fit(X_train, y_train)
+            # k-fold
+            if kf is not None:
+                cv_scores = []
 
-            # Evaluate and log performance
-            if is_classification_task(self.task):
-                probs = model.predict_proba(X_val)
-                y_pred = np.argmax(probs, axis=1)
+                for fold_id, (tr_idx, val_idx) in enumerate(kf.split(X_train, y_train)):
+                    X_tr, y_tr = X_train[tr_idx], y_train[tr_idx]
+                    X_val, y_val = X_train[val_idx], y_train[val_idx]
+
+                    model = model_class(**model_params)
+                    model.fit(X_tr, y_tr)
+                    preds = model.predict(X_val)
+                    cv_scores.append(self.score_func(y_val, preds))
+
+                    self.log.debug(f'{name} | fold {fold_id+1}/{self.cv_folds} '
+                                   f'score = {cv_scores[-1]:.4f}')
+
+                validation_score = float(np.mean(cv_scores))
+                self.log.info(f'{name} mean cv-score = {validation_score:.5f}')
+
+                final_model = model_class(**model_params)
+                final_model.fit(X_train, y_train)
+
+            # hold-out
             else:
-                y_pred = model.predict(X_val)
-
-            validation_score = self.score_func(y_val, y_pred)
-            self.log.info(f'The {name} model has been successfully fitted. '
-                          f'With {self.metric_name} score on validation set: {validation_score}')
+                final_model = model_class(**model_params)
+                final_model.fit(X_train, y_train)
+                preds = final_model.predict(X_val)
+                validation_score = self.score_func(y_val, preds)
+                self.log.info(f'{name} hold-out score = {validation_score:.5f}')
 
             # Store model with its score
             fitted_models.append({
-                'model': model,
+                'model': final_model,
                 'name': name,
                 'score': validation_score if self.maximize_metric else -validation_score
             })
@@ -126,7 +149,7 @@ class Trainer:
 
         # Return the best ensemble
         if not fitted_models:
-            raise ValueError("No models were successfully trained. Check the logs for errors.")
+            raise ValueError("No models were successfully trained.")
 
         return fitted_models[:min(len(fitted_models), self.max_ensemble_models)]
 

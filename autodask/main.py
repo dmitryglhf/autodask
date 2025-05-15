@@ -20,6 +20,8 @@ class AutoDask:
             with_tuning=False,
             time_limit=60*5,
             metric:str=None,
+            cv_folds=5,
+            seed=101,
             optimization_rounds=30,
             max_ensemble_models=3,
             models=None,
@@ -30,6 +32,8 @@ class AutoDask:
         self.with_tuning = with_tuning
         self.time_limit = time_limit
         self.metric = metric
+        self.cv_folds = cv_folds
+        self.seed = seed
         self.optimization_rounds = optimization_rounds
         self.max_ensemble_models = max_ensemble_models
         self.models = models
@@ -70,6 +74,8 @@ class AutoDask:
             with_tuning=self.with_tuning,
             time_limit=self.time_limit,
             metric=self.metric,
+            cv_folds=self.cv_folds,
+            seed=self.seed,
             optimization_rounds=self.optimization_rounds,
             max_ensemble_models=self.max_ensemble_models,
             models=self.models,
@@ -105,7 +111,7 @@ class AutoDask:
         return self.ensemble
 
     def save(self, path):
-        """Implementation for saving the model"""
+        """Implementation for saving the ensemble"""
         dump(self.ensemble, path)
 
     def load_model(self, path):

@@ -23,7 +23,7 @@ class AtomizedModel:
             with open(cls.SEARCH_PARAMS_PATH, 'r') as f:
                 return json.load(f)
         except FileNotFoundError:
-            ValueError(f"Warning: Parameter space file not found at {cls.SEARCH_PARAMS_PATH}")
+            ValueError(f"Parameter space file not found at {cls.SEARCH_PARAMS_PATH}")
 
     @classmethod
     def _load_parameter_default(cls) -> Dict[str, Dict[str, Any]]:
@@ -32,7 +32,7 @@ class AtomizedModel:
             with open(cls.DEFAULT_PARAMS_PATH, 'r') as f:
                 return json.load(f)
         except FileNotFoundError:
-            ValueError(f"Warning: Parameter space file not found at {cls.DEFAULT_PARAMS_PATH}")
+            ValueError(f"Parameter space file not found at {cls.DEFAULT_PARAMS_PATH}")
 
     @classmethod
     def get_classifier_models(cls) -> Dict[str, Tuple[Type, Dict[str, Any], Dict[str, Any]]]:
