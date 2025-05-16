@@ -3,7 +3,7 @@
 <img src="./img/logo.png" alt="logo" width="150"/>
 
 # AutoDask
-### AutoML Library Based on Dask with Bee Colony Optimization
+### AutoDask is currently in the development stage, which is why some modules may not work or may have errors.
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
