@@ -33,11 +33,13 @@ class WeightedAverageBlender(BaseEstimator):
         is_maximize_metric (bool): Whether higher metric values are better
 
     Examples:
+        ```
         >>> models = [{'model': RandomForestClassifier(), 'name': 'RF'},
         ...           {'model': LogisticRegression(), 'name': 'LR'}]
         >>> blender = WeightedAverageBlender(models, task='classification')
         >>> blender.fit(X_train, y_train)
         >>> preds = blender.predict(X_test)
+        ```
     """
 
     def __init__(self,

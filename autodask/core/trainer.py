@@ -46,11 +46,13 @@ class Trainer:
         log (Logger): Logger instance for tracking progress
 
     Example:
+        ```
         >>> trainer = Trainer(task='classification', cv_folds=5)
         >>> # Without validation data - k-fold cv
         >>> models = trainer.launch(X_train, y_train)
         >>> # With validation data - hold-out cv
         >>> models = trainer.launch(X_train, y_train, validation_data=(X_val, y_val))
+        ```
     """
 
     def __init__(self,

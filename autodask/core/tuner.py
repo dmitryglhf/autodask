@@ -26,6 +26,7 @@ class BeeColonyOptimizer:
         log (Logger): Logger instance for tracking progress
 
     Example:
+        ```
         >>> param_space = {
         ...     'n_estimators': (50, 200),
         ...     'max_depth': [3, 5, 7, None],
@@ -41,6 +42,7 @@ class BeeColonyOptimizer:
         ...     maximize=True,
         ...     rounds=20
         ... )
+        ```
     """
 
     def __init__(self,

@@ -40,12 +40,14 @@ class AutoDask:
         log: Logger instance for tracking progress.
 
     Example:
+        ```
         >>> adsk = AutoDask(task='classification', n_jobs=4, with_tuning=True)
         >>> # Without validation data - k-fold cv
         >>> adsk.fit(X_train, y_train)
         >>> # With validation data - hold-out cv
         >>> adsk.fit(X_train, y_train, validation_data=(X_val, y_val))
         >>> predictions = adsk.predict(X_test)
+        ```
     """
 
     def __init__(
