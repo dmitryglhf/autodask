@@ -9,7 +9,7 @@ from sklearn.preprocessing import (StandardScaler,
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 
-from utils.log import get_logger
+from autodask.utils.log import get_logger
 
 
 class Preprocessor(BaseEstimator, TransformerMixin):

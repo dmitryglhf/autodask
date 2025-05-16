@@ -5,11 +5,11 @@ import pandas as pd
 from distributed import Client, LocalCluster
 
 from pickle import dump, load
-from core.blender import WeightedAverageBlender
-from core.preprocessor import Preprocessor
-from core.trainer import Trainer
-from utils.log import get_logger
-from utils.regular_functions import is_classification_task, get_n_classes
+from autodask.core.blender import WeightedAverageBlender
+from autodask.core.preprocessor import Preprocessor
+from autodask.core.trainer import Trainer
+from autodask.utils.log import get_logger
+from autodask.utils.regular_functions import is_classification_task, get_n_classes
 
 
 class AutoDask:

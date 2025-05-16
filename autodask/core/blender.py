@@ -2,8 +2,8 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from scipy.optimize import minimize
 
-from utils.log import get_logger
-from utils.regular_functions import is_classification_task, setup_metric
+from autodask.utils.log import get_logger
+from autodask.utils.regular_functions import is_classification_task, setup_metric
 
 
 class WeightedAverageBlender(BaseEstimator):

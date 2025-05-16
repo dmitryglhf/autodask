@@ -6,14 +6,14 @@ import pandas as pd
 
 # import dask.array as da
 
-from core.tuner import BeeColonyOptimizer
-from utils.log import get_logger
-from repository.model_repository import AtomizedModel
+from autodask.core.tuner import BeeColonyOptimizer
+from autodask.utils.log import get_logger
+from autodask.repository.model_repository import AtomizedModel
 from sklearn.model_selection import KFold, StratifiedKFold
 
 import warnings
 
-from utils.regular_functions import is_classification_task, setup_metric
+from autodask.utils.regular_functions import is_classification_task, setup_metric
 
 warnings.filterwarnings('ignore')
 

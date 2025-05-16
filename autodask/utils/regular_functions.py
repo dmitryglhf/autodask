@@ -1,6 +1,6 @@
 import numpy as np
 
-from repository.metric_repository import get_metric, get_default_metric
+from autodask.repository.metric_repository import get_metric, get_default_metric
 
 
 def is_classification_task(task: str) -> bool:
