@@ -1,0 +1,25 @@
+site_name: AutoDask
+docs_dir: docs
+nav:
+  - Homepage: index.md
+  - Usage:
+    - Basic usage: autodask/basic_usage.md
+    - Advanced usage: autodask/advanced_usage.md
+  - API:
+    - Orchestrating class: autodask/main.md
+    - Trainer: autodask/trainer.md
+    - Bee Tuner: autodask/tuner.md
+    - Blender: autodask/blender.md
+    - Repository: autodask/repository.md
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - toc.integrate
+  logo: img/logo.png
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
