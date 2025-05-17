@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from autodask.repository.metric_repository import get_metric, get_default_metric
 
@@ -11,7 +12,6 @@ def is_classification_task(task: str) -> bool:
     else:
         raise ValueError(f"Unsupported task: {task}")
 
-
 def setup_metric(metric_name:str=None, task:str=None):
     """Set up the metric function based on task or provided metric name"""
     if task is None:
@@ -21,6 +21,29 @@ def setup_metric(metric_name:str=None, task:str=None):
     score_func, metric_name, maximize_metric =  get_metric(metric_name)
     return score_func, metric_name, maximize_metric
 
-
 def get_n_classes(y):
     return len(np.unique(y))
+
+def prepare_input_arrays(X, y):
+    # X processing
+    if X is not None:
+        if not isinstance(X, np.ndarray):
+            if isinstance(X, pd.DataFrame):
+                X = X.values
+            else:
+                X = np.array(X)
+
+    # y processing
+    if y is not None:
+        if isinstance(y, str):
+            try:
+                y = X[y]
+                y = np.array(y)
+            except:
+                raise ValueError(f"No column name {y}")
+        elif isinstance(y, pd.DataFrame) or isinstance(y, pd.Series):
+            y = y.values
+        else:
+            y = np.array(y)
+
+    return X, y

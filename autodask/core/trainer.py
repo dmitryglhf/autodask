@@ -8,6 +8,7 @@ import pandas as pd
 
 from autodask.core.tuner import BeeColonyOptimizer
 from autodask.utils.log import get_logger
+from autodask.utils.cross_val import evaluate_model
 from autodask.repository.model_repository import AtomizedModel
 from sklearn.model_selection import KFold, StratifiedKFold
 
@@ -84,10 +85,7 @@ class Trainer:
             setup_metric(metric_name=metric, task=task)
         )
 
-    def launch(self,
-               X_train: Union[pd.DataFrame],
-               y_train: Union[np.ndarray],
-               validation_data:tuple=None):
+    def launch(self, X_train: Union[pd.DataFrame], y_train: Union[np.ndarray]):
         """Execute the complete training pipeline.
 
         Args:
@@ -99,22 +97,14 @@ class Trainer:
             list: Sorted list of dictionaries containing trained models, their names and scores
         """
         self.start_time = time.time()
-
-        # Handle validation data
-        if validation_data is not None:
-            # hold-out
-            X_val, y_val = validation_data
-            kf = None
+        if is_classification_task(self.task):
+            kf = StratifiedKFold(n_splits=self.cv_folds,
+                                 shuffle=True,
+                                 random_state=self.seed)
         else:
-            # k-fold
-            if is_classification_task(self.task):
-                kf = StratifiedKFold(n_splits=self.cv_folds,
-                                     shuffle=True,
-                                     random_state=self.seed)
-            else:
-                kf = KFold(n_splits=self.cv_folds,
-                           shuffle=True,
-                           random_state=self.seed)
+            kf = KFold(n_splits=self.cv_folds,
+                       shuffle=True,
+                       random_state=self.seed)
 
         # Get models based on task or provided model names
         models = self._get_models()
@@ -147,7 +137,6 @@ class Trainer:
                     model_class=model_class,
                     param_space=param_space,
                     X_train=X_train, y_train=y_train,
-                    X_val=None, y_val=None,
                     metric_func=self.score_func,
                     maximize=self.maximize_metric,
                     rounds=self.optimization_rounds,
@@ -159,37 +148,14 @@ class Trainer:
             else:
                 model_params = param_default
 
-            # k-fold
-            if kf is not None:
-                cv_scores = []
+            # Get score by using k-fold cross validation
+            validation_score = evaluate_model(
+                model_class, model_params, X_train, y_train, self.score_func, self.cv_folds
+            )
+            self.log.info(f'{name} mean cv-score = {validation_score:.5f}')
 
-                for fold_id, (tr_idx, val_idx) in enumerate(kf.split(X_train, y_train)):
-                    X_tr = X_train.iloc[tr_idx]
-                    y_tr = y_train[tr_idx]
-                    X_val = X_train.iloc[val_idx]
-                    y_val = y_train[val_idx]
-
-                    model = model_class(**model_params)
-                    model.fit(X_tr, y_tr)
-                    preds = model.predict(X_val)
-                    cv_scores.append(self.score_func(y_val, preds))
-
-                    self.log.debug(f'{name} | fold {fold_id+1}/{self.cv_folds} '
-                                   f'score = {cv_scores[-1]:.4f}')
-
-                validation_score = float(np.mean(cv_scores))
-                self.log.info(f'{name} mean cv-score = {validation_score:.5f}')
-
-                final_model = model_class(**model_params)
-                final_model.fit(X_train, y_train)
-
-            # hold-out
-            else:
-                final_model = model_class(**model_params)
-                final_model.fit(X_train, y_train)
-                preds = final_model.predict(X_val)
-                validation_score = self.score_func(y_val, preds)
-                self.log.info(f'{name} hold-out score = {validation_score:.5f}')
+            final_model = model_class(**model_params)
+            final_model.fit(X_train, y_train)
 
             # Store model with its score
             fitted_models.append({

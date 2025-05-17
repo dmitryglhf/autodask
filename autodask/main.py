@@ -9,7 +9,7 @@ from autodask.core.blender import WeightedAverageBlender
 from autodask.core.preprocessor import Preprocessor
 from autodask.core.trainer import Trainer
 from autodask.utils.log import get_logger
-from autodask.utils.regular_functions import is_classification_task, get_n_classes
+from autodask.utils.regular_functions import is_classification_task, get_n_classes, prepare_input_arrays
 
 
 class AutoDask:
@@ -40,14 +40,11 @@ class AutoDask:
         log: Logger instance for tracking progress.
 
     Example:
-        ```
+
         >>> adsk = AutoDask(task='classification', n_jobs=4, with_tuning=True)
-        >>> # Without validation data - k-fold cv
         >>> adsk.fit(X_train, y_train)
-        >>> # With validation data - hold-out cv
-        >>> adsk.fit(X_train, y_train, validation_data=(X_val, y_val))
         >>> predictions = adsk.predict(X_test)
-        ```
+
     """
 
     def __init__(
@@ -85,8 +82,7 @@ class AutoDask:
         self.log = get_logger(self.__class__.__name__)
 
     def fit(self, X_train: Union[pd.DataFrame, np.ndarray, tuple, dict, list],
-            y_train: Union[pd.DataFrame, np.ndarray, tuple, dict, list, str],
-            validation_data:tuple[Union[pd.DataFrame, np.ndarray]]=None):
+            y_train: Union[pd.DataFrame, np.ndarray, tuple, dict, list, str]):
         """Train the AutoDask model on the given training data.
 
         Args:
@@ -98,7 +94,6 @@ class AutoDask:
                 - pandas DataFrame/Series
                 - numpy array
                 - column name (str) if X_train is DataFrame
-            validation_data: Optional tuple (X_val, y_val) for validation.
 
         Returns:
             self: Returns the instance itself.
@@ -112,12 +107,14 @@ class AutoDask:
             self.log.info(f"Models to be considered: {self.models}")
 
         self._kind_clf(y_train)
+
         if self.preprocess:
             self.preprocessor = Preprocessor()
             X_train, y_train = self.preprocessor.fit_transform(X_train, y_train)
             self.log.info('Features preprocessing finished')
 
-        X_train, y_train = self._check_input_correctness(X_train, y_train)
+        # Check for correctness and convert to numpy arrays
+        X_train, y_train = prepare_input_arrays(X_train, y_train)
 
         trainer = Trainer(
             task=self.task,
@@ -132,10 +129,7 @@ class AutoDask:
             bco_params=self.bco_params
         )
 
-        best_models = trainer.launch(
-            X_train, y_train,
-            validation_data=validation_data,
-        )
+        best_models = trainer.launch(X_train, y_train)
 
         self.ensemble = WeightedAverageBlender(
             best_models,
@@ -158,7 +152,7 @@ class AutoDask:
             Array of predictions. For classification, returns class labels.
             For regression, returns continuous values.
         """
-        X_test, _ = self._check_input_correctness(X_test, y=None)
+        X_test, _ = prepare_input_arrays(X_test, y=None)
         if self.preprocessor:
             X_test_prep = self.preprocessor.transform(X_test)
             y_pred_enc = self.ensemble.predict(X_test_prep)
@@ -175,7 +169,7 @@ class AutoDask:
         Returns:
             Array of predictions with class probabilities.
         """
-        X_test, _ = self._check_input_correctness(X_test, y=None)
+        X_test, _ = prepare_input_arrays(X_test, y=None)
         if self.preprocessor:
             X_test_prep = self.preprocessor.transform(X_test)
             return self.ensemble.predict_proba(X_test_prep)
@@ -256,16 +250,6 @@ class AutoDask:
         if self.dask_cluster is not None:
             self.dask_cluster.close()
             del self.dask_cluster
-
-    def _check_input_correctness(self, X, y):
-        if not isinstance(X, pd.DataFrame) and X is not None:
-            X = pd.DataFrame(X)
-        if isinstance(y, str) and y is not None:
-            try:
-                y = X[y]
-            except:
-                raise ValueError(f"No column name {y}")
-        return X, y
 
     def _kind_clf(self, y_train):
         if is_classification_task(self.task):
