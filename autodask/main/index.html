@@ -6,7 +6,13 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="AutoML Library Based on Dask with Bee Colony Optimization">
       
+      
+        <meta name="author" content="Dmitry Gilemkhanov">
+      
+      
+        <link rel="canonical" href="https://dmitryglhf.github.io/autodask/autodask/main/">
       
       
         <link rel="prev" href="../advanced_usage/">
@@ -25,6 +31,9 @@
     
     
       <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -53,7 +62,14 @@
   </head>
   
   
-    <body dir="ltr">
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -78,7 +94,8 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="AutoDask" class="md-header__button md-logo" aria-label="AutoDask" data-md-component="logo">
       
-  <img src="../../img/logo.png" alt="logo">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -101,6 +118,32 @@
         </div>
       </div>
     </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
     
     
       <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
@@ -147,6 +190,18 @@
 </div>
       
     
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dmitryglhf/autodask" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    dmitryglhf/autodask
+  </div>
+</a>
+      </div>
     
   </nav>
   
@@ -253,11 +308,24 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="AutoDask" class="md-nav__button md-logo" aria-label="AutoDask" data-md-component="logo">
       
-  <img src="../../img/logo.png" alt="logo">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
     AutoDask
   </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dmitryglhf/autodask" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    dmitryglhf/autodask
+  </div>
+</a>
+    </div>
   
   <ul class="md-nav__list" data-md-scrollfix>
     
@@ -758,11 +826,14 @@
                   
 
 
+  
+  
+
 
 <h1 id="orchestrating-class-for-autodask">Orchestrating class for AutoDask</h1>
 <h2 id="class-autodask">Class: AutoDask</h2>
-<pre><code class="language-python">from autodask.main import AutoDask
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">autodask.main</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoDask</span>
+</code></pre></div>
 <h3 id="description">Description</h3>
 <p>An end-to-end automated machine learning solution that handles preprocessing, model selection, hyperparameter tuning, and ensemble construction. It supports both classification and regression tasks with parallel execution using Dask.</p>
 <h3 id="constructor-parameters">Constructor Parameters</h3>
@@ -908,25 +979,15 @@
 <td><em>required</em></td>
 <td>Training target. Can be a pandas DataFrame/Series, numpy array, or column name (str) if X_train is a DataFrame.</td>
 </tr>
-<tr>
-<td><code>validation_data</code></td>
-<td>tuple</td>
-<td>None</td>
-<td>Optional tuple (X_val, y_val) for validation. If provided, hold-out validation is used; otherwise, k-fold cross-validation is used.</td>
-</tr>
 </tbody>
 </table>
 <p><strong>Returns:</strong></p>
 <p>The instance itself (self), allowing for method chaining.</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-python"># Without validation data (uses k-fold cross-validation)
-adsk = AutoDask(task='classification')
-adsk.fit(X_train, y_train)
-
-# With validation data (uses hold-out validation)
-adsk = AutoDask(task='regression')
-adsk.fit(X_train, y_train, validation_data=(X_val, y_val))
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="c1"># Without validation data (uses k-fold cross-validation)</span>
+<span class="n">adsk</span> <span class="o">=</span> <span class="n">AutoDask</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s1">&#39;classification&#39;</span><span class="p">)</span>
+<span class="n">adsk</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</code></pre></div>
 <h4 id="predictx_test"><code>predict(X_test)</code></h4>
 <p>Make predictions on new data using the trained ensemble.</p>
 <p><strong>Parameters:</strong></p>
@@ -949,8 +1010,8 @@ adsk.fit(X_train, y_train, validation_data=(X_val, y_val))
 <p><strong>Returns:</strong></p>
 <p>Array of predictions. For classification, returns class labels. For regression, returns continuous values.</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-python">predictions = adsk.predict(X_test)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">predictions</span> <span class="o">=</span> <span class="n">adsk</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+</code></pre></div>
 <h4 id="predict_probax_test"><code>predict_proba(X_test)</code></h4>
 <p>For classification tasks, returns the class probabilities for each sample.</p>
 <p><strong>Parameters:</strong></p>
@@ -973,22 +1034,22 @@ adsk.fit(X_train, y_train, validation_data=(X_val, y_val))
 <p><strong>Returns:</strong></p>
 <p>Array of prediction probabilities for each class.</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-python">probabilities = adsk.predict_proba(X_test)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">probabilities</span> <span class="o">=</span> <span class="n">adsk</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+</code></pre></div>
 <h4 id="get_fitted_ensemble"><code>get_fitted_ensemble()</code></h4>
 <p>Get the trained ensemble model.</p>
 <p><strong>Returns:</strong></p>
 <p>The fitted <code>WeightedAverageBlender</code> ensemble model.</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-python">ensemble = adsk.get_fitted_ensemble()
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">ensemble</span> <span class="o">=</span> <span class="n">adsk</span><span class="o">.</span><span class="n">get_fitted_ensemble</span><span class="p">()</span>
+</code></pre></div>
 <h4 id="get_fitted_preprocessor"><code>get_fitted_preprocessor()</code></h4>
 <p>Get the fitted preprocessing pipeline.</p>
 <p><strong>Returns:</strong></p>
 <p>The fitted <code>Preprocessor</code> preprocessing pipeline.</p>
 <p><strong>Example:</strong></p>
-<pre><code class="language-python">preprocessor = adsk.get_fitted_preprocessor()
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">preprocessor</span> <span class="o">=</span> <span class="n">adsk</span><span class="o">.</span><span class="n">get_fitted_preprocessor</span><span class="p">()</span>
+</code></pre></div>
 <h4 id="savepath"><code>save(path)</code></h4>
 <p>Save the trained ensemble to disk.</p>
 <p><strong>Parameters:</strong></p>
@@ -1009,8 +1070,8 @@ adsk.fit(X_train, y_train, validation_data=(X_val, y_val))
 </tbody>
 </table>
 <p><strong>Example:</strong></p>
-<pre><code class="language-python">adsk.save('adsk_model.pkl')
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">adsk</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;adsk_model.pkl&#39;</span><span class="p">)</span>
+</code></pre></div>
 <h4 id="load_modelpath"><code>load_model(path)</code></h4>
 <p>Load a previously saved ensemble from disk.</p>
 <p><strong>Parameters:</strong></p>
@@ -1031,9 +1092,9 @@ adsk.fit(X_train, y_train, validation_data=(X_val, y_val))
 </tbody>
 </table>
 <p><strong>Example:</strong></p>
-<pre><code class="language-python">adsk.load_model('adsk_model.pkl')
-adsk.predict(X_new)  # Can now make predictions
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">adsk</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s1">&#39;adsk_model.pkl&#39;</span><span class="p">)</span>
+<span class="n">adsk</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_new</span><span class="p">)</span>  <span class="c1"># Can now make predictions</span>
+</code></pre></div>
 <h3 id="private-methods">Private Methods</h3>
 <p>These methods are used internally by the AutoDask class:</p>
 <ul>
@@ -1078,10 +1139,26 @@ adsk.predict(X_new)  # Can now make predictions
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
   
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Dmitry Gilemkhanov
+    </div>
+  
   
     Made with
     <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
       Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/dmitryglhf/autodask" target="_blank" rel="noopener" title="GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
     </a>
   
 </div>
@@ -1098,7 +1175,7 @@ adsk.predict(X_new)  # Can now make predictions
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.indexes", "toc.integrate"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.indexes", "toc.integrate", "content.code.copy", "header.autohide", "palette.toggle"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
