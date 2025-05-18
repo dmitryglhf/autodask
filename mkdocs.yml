@@ -1,25 +1,77 @@
+# Project information
 site_name: AutoDask
+site_url: https://dmitryglhf.github.io/autodask/
+site_author: Dmitry Gilemkhanov
+site_description: >-
+  AutoML Library Based on Dask with Bee Colony Optimization
+
+# Repository
+repo_name: dmitryglhf/autodask
+repo_url: https://github.com/dmitryglhf/autodask
+
+# Copyright
+copyright: Copyright &copy; 2025 Dmitry Gilemkhanov
+
+# Docs dir
 docs_dir: docs
+
+# Page Tree
 nav:
   - Homepage: index.md
   - Usage:
-    - Basic usage: autodask/basic_usage.md
-    - Advanced usage: autodask/advanced_usage.md
+      - Basic usage: autodask/basic_usage.md
+      - Advanced usage: autodask/advanced_usage.md
   - API:
-    - Orchestrating class: autodask/main.md
-    - Trainer: autodask/trainer.md
-    - Bee Tuner: autodask/tuner.md
-    - Blender: autodask/blender.md
-    - Repository: autodask/repository.md
+      - Orchestrating class: autodask/main.md
+      - Trainer: autodask/trainer.md
+      - Bee Tuner: autodask/tuner.md
+      - Blender: autodask/blender.md
+      - Repository: autodask/repository.md
 
+# Theme configuration
 theme:
   name: material
   features:
     - navigation.tabs
     - navigation.indexes
     - toc.integrate
-  logo: img/logo.png
+    - content.code.copy
+    - header.autohide
+    - palette.toggle
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+  repo_url: https://github.com/dmitryglhf/autodask
+  repo_name: GitHub
 
+# Syntax highlighting
 markdown_extensions:
   - admonition
   - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - codehilite:
+      guess_lang: false
+      linenums: true
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+
+# Extra configuration
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/dmitryglhf/autodask
+      name: GitHub

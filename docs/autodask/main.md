@@ -48,7 +48,6 @@ Train the AutoDask model on the given training data.
 |-----------|------|---------|-------------|
 | `X_train` | Union[pd.DataFrame, np.ndarray, tuple, dict, list] | *required* | Training features. Can be a pandas DataFrame, numpy array, or a tuple/dict/list of arrays (for multi-input models). |
 | `y_train` | Union[pd.DataFrame, np.ndarray, tuple, dict, list, str] | *required* | Training target. Can be a pandas DataFrame/Series, numpy array, or column name (str) if X_train is a DataFrame. |
-| `validation_data` | tuple | None | Optional tuple (X_val, y_val) for validation. If provided, hold-out validation is used; otherwise, k-fold cross-validation is used. |
 
 **Returns:**
 
@@ -60,10 +59,6 @@ The instance itself (self), allowing for method chaining.
 # Without validation data (uses k-fold cross-validation)
 adsk = AutoDask(task='classification')
 adsk.fit(X_train, y_train)
-
-# With validation data (uses hold-out validation)
-adsk = AutoDask(task='regression')
-adsk.fit(X_train, y_train, validation_data=(X_val, y_val))
 ```
 
 #### `predict(X_test)`
