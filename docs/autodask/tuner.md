@@ -181,4 +181,4 @@ print(f'Best parameters: \n {best_params}')
 ## Notes
 
 - The `BeeColonyOptimizer` uses cross-validation to evaluate each solution, making it robust to overfitting.
-- A large number of rounds can take a very long time to process
+- A large number of rounds can take a very long time to process.
