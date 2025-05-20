@@ -77,6 +77,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#beecolonyoptimizer-module-documentation" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -563,6 +568,21 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Bee Tuner
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -575,6 +595,178 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-beecolonyoptimizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Class: BeeColonyOptimizer
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Class: BeeColonyOptimizer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      Description
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructor-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constructor Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Attributes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optimizemodel_class-param_space-x_train-y_train-metric_func-maximizetrue-rounds1-time_limitnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      optimize(model_class, param_space, X_train, y_train, metric_func, maximize=True, rounds=1, time_limit=None)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialize_colonymodel_class-param_space-x_train-y_train-metric_func" class="md-nav__link">
+    <span class="md-ellipsis">
+      initialize_colony(model_class, param_space, X_train, y_train, metric_func)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update_best_solutionbest_params-best_score-maximize" class="md-nav__link">
+    <span class="md-ellipsis">
+      update_best_solution(best_params, best_score, maximize)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#employed_bees_phasemodel_class-param_space-x_train-y_train-metric_func-maximize" class="md-nav__link">
+    <span class="md-ellipsis">
+      employed_bees_phase(model_class, param_space, X_train, y_train, metric_func, maximize)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onlooker_bees_phasemodel_class-param_space-x_train-y_train-metric_func-maximize" class="md-nav__link">
+    <span class="md-ellipsis">
+      onlooker_bees_phase(model_class, param_space, X_train, y_train, metric_func, maximize)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#private-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Private Methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-hyperparameter-optimization-for-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Hyperparameter Optimization for Classification
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Notes
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -653,9 +845,375 @@
   
 
 
-  <h1>Bee Tuner</h1>
+<h1 id="beecolonyoptimizer-module-documentation">BeeColonyOptimizer Module Documentation</h1>
+<h2 id="overview">Overview</h2>
+<p>The <code>BeeColonyOptimizer</code> class provides an simplified implementation of the Bee Colony Optimization (BCO) algorithm for hyperparameter tuning in machine learning models. This algorithm is inspired by the foraging behavior of honey bees and is effective for exploring complex hyperparameter spaces to find optimal configurations.</p>
+<h2 id="class-beecolonyoptimizer">Class: BeeColonyOptimizer</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">autodask.core.optimizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">BeeColonyOptimizer</span>
+</code></pre></div>
+<h3 id="description">Description</h3>
+<p>A hyperparameter optimization solution based on the Bee Colony Optimization algorithm. It efficiently explores the hyperparameter space to find optimal model configurations for both classification and regression tasks.</p>
+<h3 id="constructor-parameters">Constructor Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>task</code></td>
+<td>str</td>
+<td><em>required</em></td>
+<td>The machine learning task type. Supported values: 'classification', 'regression'.</td>
+</tr>
+<tr>
+<td><code>employed_bees</code></td>
+<td>int</td>
+<td>3</td>
+<td>Number of employed bees in the colony. These bees explore the neighborhood of existing solutions.</td>
+</tr>
+<tr>
+<td><code>onlooker_bees</code></td>
+<td>int</td>
+<td>3</td>
+<td>Number of onlooker bees in the colony. These bees focus on promising solutions.</td>
+</tr>
+<tr>
+<td><code>exploration_rate</code></td>
+<td>float</td>
+<td>0.3</td>
+<td>Balance between exploration (random search) and exploitation (neighborhood refinement). Higher values favor exploration.</td>
+</tr>
+<tr>
+<td><code>cv_folds</code></td>
+<td>int</td>
+<td>2</td>
+<td>Number of cross-validation folds for evaluating solutions.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="attributes">Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>solutions</code></td>
+<td>list</td>
+<td>Current solutions maintained by the colony (each solution is a tuple of parameters and score).</td>
+</tr>
+<tr>
+<td><code>solution_trials</code></td>
+<td>dict</td>
+<td>Tracks how many times each solution has been tried without improvement.</td>
+</tr>
+<tr>
+<td><code>task</code></td>
+<td>str</td>
+<td>The machine learning task type ('classification' or 'regression').</td>
+</tr>
+<tr>
+<td><code>cv_folds</code></td>
+<td>int</td>
+<td>Number of cross-validation folds.</td>
+</tr>
+<tr>
+<td><code>log</code></td>
+<td>Logger</td>
+<td>Logger instance for tracking progress.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods">Methods</h3>
+<h4 id="optimizemodel_class-param_space-x_train-y_train-metric_func-maximizetrue-rounds1-time_limitnone"><code>optimize(model_class, param_space, X_train, y_train, metric_func, maximize=True, rounds=1, time_limit=None)</code></h4>
+<p>Run the bee colony optimization algorithm to find optimal hyperparameters.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model_class</code></td>
+<td>Class</td>
+<td><em>required</em></td>
+<td>The machine learning model class to optimize.</td>
+</tr>
+<tr>
+<td><code>param_space</code></td>
+<td>dict</td>
+<td><em>required</em></td>
+<td>Parameter search space defining possible values for each hyperparameter.</td>
+</tr>
+<tr>
+<td><code>X_train</code></td>
+<td>Union[pd.DataFrame, np.ndarray]</td>
+<td><em>required</em></td>
+<td>Training features.</td>
+</tr>
+<tr>
+<td><code>y_train</code></td>
+<td>Union[pd.Series, np.ndarray]</td>
+<td><em>required</em></td>
+<td>Training target.</td>
+</tr>
+<tr>
+<td><code>metric_func</code></td>
+<td>callable</td>
+<td><em>required</em></td>
+<td>Scoring function to evaluate model performance.</td>
+</tr>
+<tr>
+<td><code>maximize</code></td>
+<td>bool</td>
+<td>True</td>
+<td>Whether to maximize or minimize the metric. Set to True for metrics like accuracy, F1; False for metrics like error, loss.</td>
+</tr>
+<tr>
+<td><code>rounds</code></td>
+<td>int</td>
+<td>1</td>
+<td>Number of optimization rounds to perform.</td>
+</tr>
+<tr>
+<td><code>time_limit</code></td>
+<td>int</td>
+<td>None</td>
+<td>Maximum time in seconds for optimization. If None, no time limit is applied.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<p>A tuple containing the best parameters found and their corresponding score.</p>
+<h4 id="initialize_colonymodel_class-param_space-x_train-y_train-metric_func"><code>initialize_colony(model_class, param_space, X_train, y_train, metric_func)</code></h4>
+<p>Initialize bee colony with random solutions.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model_class</code></td>
+<td>Class</td>
+<td>The machine learning model class to optimize.</td>
+</tr>
+<tr>
+<td><code>param_space</code></td>
+<td>dict</td>
+<td>Parameter search space defining possible values for each hyperparameter.</td>
+</tr>
+<tr>
+<td><code>X_train</code></td>
+<td>Union[pd.DataFrame, np.ndarray]</td>
+<td>Training features.</td>
+</tr>
+<tr>
+<td><code>y_train</code></td>
+<td>Union[pd.Series, np.ndarray]</td>
+<td>Training target.</td>
+</tr>
+<tr>
+<td><code>metric_func</code></td>
+<td>callable</td>
+<td>Scoring function to evaluate model performance.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="n">optimizer</span><span class="o">.</span><span class="n">initialize_colony</span><span class="p">(</span>
+    <span class="n">model_class</span><span class="o">=</span><span class="n">LGBMClassifier</span><span class="p">,</span>
+    <span class="n">param_space</span><span class="o">=</span><span class="n">param_space</span><span class="p">,</span>
+    <span class="n">X_train</span><span class="o">=</span><span class="n">X_train</span><span class="p">,</span>
+    <span class="n">y_train</span><span class="o">=</span><span class="n">y_train</span><span class="p">,</span>
+    <span class="n">metric_func</span><span class="o">=</span><span class="n">accuracy_score</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="update_best_solutionbest_params-best_score-maximize"><code>update_best_solution(best_params, best_score, maximize)</code></h4>
+<p>Updates the best solution found by the colony.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>best_params</code></td>
+<td>dict</td>
+<td>Current best parameters.</td>
+</tr>
+<tr>
+<td><code>best_score</code></td>
+<td>float</td>
+<td>Current best score.</td>
+</tr>
+<tr>
+<td><code>maximize</code></td>
+<td>bool</td>
+<td>Whether to maximize or minimize the score.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<p>A tuple containing the updated best parameters and best score.</p>
+<h4 id="employed_bees_phasemodel_class-param_space-x_train-y_train-metric_func-maximize"><code>employed_bees_phase(model_class, param_space, X_train, y_train, metric_func, maximize)</code></h4>
+<p>Executes the employed bees phase where bees explore the neighborhood of existing solutions.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model_class</code></td>
+<td>Class</td>
+<td>The machine learning model class to optimize.</td>
+</tr>
+<tr>
+<td><code>param_space</code></td>
+<td>dict</td>
+<td>Parameter search space defining possible values for each hyperparameter.</td>
+</tr>
+<tr>
+<td><code>X_train</code></td>
+<td>Union[pd.DataFrame, np.ndarray]</td>
+<td>Training features.</td>
+</tr>
+<tr>
+<td><code>y_train</code></td>
+<td>Union[pd.Series, np.ndarray]</td>
+<td>Training target.</td>
+</tr>
+<tr>
+<td><code>metric_func</code></td>
+<td>callable</td>
+<td>Scoring function to evaluate model performance.</td>
+</tr>
+<tr>
+<td><code>maximize</code></td>
+<td>bool</td>
+<td>Whether to maximize or minimize the score.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="onlooker_bees_phasemodel_class-param_space-x_train-y_train-metric_func-maximize"><code>onlooker_bees_phase(model_class, param_space, X_train, y_train, metric_func, maximize)</code></h4>
+<p>Executes the onlooker bees phase where bees focus on promising solutions.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model_class</code></td>
+<td>Class</td>
+<td>The machine learning model class to optimize.</td>
+</tr>
+<tr>
+<td><code>param_space</code></td>
+<td>dict</td>
+<td>Parameter search space defining possible values for each hyperparameter.</td>
+</tr>
+<tr>
+<td><code>X_train</code></td>
+<td>Union[pd.DataFrame, np.ndarray]</td>
+<td>Training features.</td>
+</tr>
+<tr>
+<td><code>y_train</code></td>
+<td>Union[pd.Series, np.ndarray]</td>
+<td>Training target.</td>
+</tr>
+<tr>
+<td><code>metric_func</code></td>
+<td>callable</td>
+<td>Scoring function to evaluate model performance.</td>
+</tr>
+<tr>
+<td><code>maximize</code></td>
+<td>bool</td>
+<td>Whether to maximize or minimize the score.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="private-methods">Private Methods</h3>
+<p>These methods are used internally by the BeeColonyOptimizer class:</p>
+<ul>
+<li><code>_calculate_selection_probabilities(maximize)</code>: Calculates probability distribution for solution selection by onlooker bees.</li>
+<li><code>_get_params_key(params)</code>: Creates a stable hashable key for parameter dictionaries.</li>
+<li><code>_generate_random_params(param_space)</code>: Generates random parameters from the parameter space.</li>
+<li><code>_explore_neighborhood(params, param_space)</code>: Generates a new solution by exploring neighborhood of current solution.</li>
+</ul>
+<h2 id="usage-examples">Usage Examples</h2>
+<h3 id="basic-hyperparameter-optimization-for-classification">Basic Hyperparameter Optimization for Classification</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">accuracy_score</span> <span class="k">as</span> <span class="n">accuracy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExtraTreesClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">autodask.core.tuner</span><span class="w"> </span><span class="kn">import</span> <span class="n">BeeColonyOptimizer</span>
 
-<p>Coming soon...</p>
+
+<span class="n">xt_params_space</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;n_estimators&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">],</span>
+    <span class="s2">&quot;criterion&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;gini&quot;</span><span class="p">,</span> <span class="s2">&quot;entropy&quot;</span><span class="p">,</span> <span class="s2">&quot;log_loss&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;max_depth&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">],</span>
+    <span class="s2">&quot;min_samples_split&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+    <span class="s2">&quot;min_samples_leaf&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+    <span class="s2">&quot;max_features&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sqrt&quot;</span><span class="p">,</span> <span class="s2">&quot;log2&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="s2">&quot;bootstrap&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">bco</span> <span class="o">=</span> <span class="n">BeeColonyOptimizer</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s1">&#39;classification&#39;</span><span class="p">)</span>
+
+<span class="n">best_params</span><span class="p">,</span> <span class="n">best_score</span> <span class="o">=</span> <span class="n">bco</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+    <span class="n">model_class</span><span class="o">=</span><span class="n">ExtraTreesClassifier</span><span class="p">,</span>
+    <span class="n">param_space</span><span class="o">=</span><span class="n">xt_params_space</span><span class="p">,</span>
+    <span class="n">X_train</span><span class="o">=</span><span class="n">X_train</span><span class="p">,</span>
+    <span class="n">y_train</span><span class="o">=</span><span class="n">y_train</span><span class="p">,</span>
+    <span class="n">metric_func</span><span class="o">=</span><span class="n">accuracy</span><span class="p">,</span>
+    <span class="n">maximize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Best score: </span><span class="si">{</span><span class="n">best_score</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Best parameters: </span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">best_params</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Now you can use optimized parameters...</span>
+</code></pre></div>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The <code>BeeColonyOptimizer</code> uses cross-validation to evaluate each solution, making it robust to overfitting.</li>
+<li>A large number of rounds can take a very long time to process.</li>
+</ul>
 
 
 
