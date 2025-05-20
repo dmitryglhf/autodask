@@ -12,53 +12,51 @@ class BeeColonyOptimizer:
     """Implementation of the Bee Colony Optimization (BCO) algorithm for hyperparameter tuning."""
 
     def __init__(self,
-                 employed_bees=20,
-                 onlooker_bees=10,
-                 scout_bees=5,
-                 abandonment_limit=10,
+                 task: str,
+                 employed_bees=3,
+                 onlooker_bees=3,
                  exploration_rate=0.3,
-                 cv_folds=5):
+                 cv_folds=2):
         self.employed_bees = employed_bees
         self.onlooker_bees = onlooker_bees
-        self.scout_bees = scout_bees
-        self.abandonment_limit = abandonment_limit
         self.exploration_rate = exploration_rate
 
         self.solutions = None
         self.solution_trials = None
 
+        self.task = task
         self.cv_folds = cv_folds
 
         self.log = get_logger(self.__class__.__name__)
 
     def optimize(self, model_class, param_space, X_train, y_train,
-                 metric_func, maximize=True, rounds=30, time_limit=None):
+                 metric_func, maximize=True, rounds=1, time_limit=None):
         """Run the bee colony optimization algorithm."""
         start_time = time.time()
         best_params = None
         best_score = float('-inf') if maximize else float('inf')
 
         # Colony initialization and initial solution update
+        self.log.info("Colony initialization...")
         self.initialize_colony(model_class, param_space, X_train, y_train, metric_func)
         best_params, best_score = self.update_best_solution(best_params, best_score, maximize)
 
         # Optimization loop
+        self.log.info("Starting optimization loop")
         for round_idx in range(rounds):
             if time_limit and (time.time() - start_time) > time_limit:
                 break
 
             # Employed bees phase
-            self.deploy_employed_bees(model_class, param_space, X_train, y_train, metric_func, maximize)
+            self.employed_bees_phase(model_class, param_space, X_train, y_train, metric_func, maximize)
             best_params, best_score = self.update_best_solution(best_params, best_score, maximize)
 
             # Onlooker bees phase
-            self.dispatch_onlooker_bees(model_class, param_space, X_train, y_train, metric_func, maximize)
+            self.onlooker_bees_phase(model_class, param_space, X_train, y_train, metric_func, maximize)
             best_params, best_score = self.update_best_solution(best_params, best_score, maximize)
 
-            # Scout bees phase
-            self.send_scout_bees(model_class, param_space, X_train, y_train, metric_func, maximize)
-            best_params, best_score = self.update_best_solution(best_params, best_score, maximize)
-
+        self.log.info(f"Obtained parameters: {best_params}")
+        self.log.info(f"Best score: {round(best_score, 3)}")
         return best_params, best_score
 
     def initialize_colony(self, model_class, param_space, X_train, y_train, metric_func):
@@ -79,7 +77,7 @@ class BeeColonyOptimizer:
 
         for _ in range(self.employed_bees):
             params = self._generate_random_params(param_space)
-            score = evaluate_model(model_class, params, X_train, y_train, metric_func, self.cv_folds)
+            score = evaluate_model(model_class, params, X_train, y_train, metric_func, self.task, self.cv_folds)
 
             # Create a stable key for the params
             params_key = self._get_params_key(params)
@@ -105,7 +103,7 @@ class BeeColonyOptimizer:
 
         return best_params, best_score
 
-    def deploy_employed_bees(self, model_class, param_space, X_train, y_train, metric_func, maximize):
+    def employed_bees_phase(self, model_class, param_space, X_train, y_train, metric_func, maximize):
         """Employed bees phase: explore neighborhood of existing solutions.
 
         Args:
@@ -125,7 +123,9 @@ class BeeColonyOptimizer:
 
             new_params = self._explore_neighborhood(params, param_space)
             new_params_key = self._get_params_key(new_params)
-            new_score = evaluate_model(model_class, new_params, X_train, y_train, metric_func, self.cv_folds)
+            new_score = evaluate_model(
+                model_class, new_params, X_train, y_train, metric_func, self.task, self.cv_folds
+            )
 
             if (maximize and new_score > score) or (not maximize and new_score < score):
                 self.solutions[i] = (new_params, new_score)
@@ -157,7 +157,7 @@ class BeeColonyOptimizer:
             return [p / total for p in probs]
         return [1 / len(probs) for _ in probs]  # Равномерное распределение, если все значения одинаковы
 
-    def dispatch_onlooker_bees(self, model_class, param_space, X_train, y_train, metric_func, maximize):
+    def onlooker_bees_phase(self, model_class, param_space, X_train, y_train, metric_func, maximize):
         """Onlooker bees phase: focus on promising solutions.
 
         Args:
@@ -181,7 +181,9 @@ class BeeColonyOptimizer:
 
                 new_params = self._explore_neighborhood(params, param_space)
                 new_params_key = self._get_params_key(new_params)
-                new_score = evaluate_model(model_class, new_params, X_train, y_train, metric_func, self.cv_folds)
+                new_score = evaluate_model(
+                    model_class, new_params, X_train, y_train, metric_func, self.task, self.cv_folds
+                )
 
                 if (maximize and new_score > score) or (not maximize and new_score < score):
                     self.solutions[selected_idx] = (new_params, new_score)
@@ -191,36 +193,6 @@ class BeeColonyOptimizer:
                     if params_key not in self.solution_trials:
                         self.solution_trials[params_key] = 0
                     self.solution_trials[params_key] += 1
-
-    def send_scout_bees(self, model_class, param_space, X_train, y_train, metric_func, maximize):
-        """Scout bees phase: abandon solutions that haven't improved.
-
-        Args:
-            model_class: The machine learning model class to optimize
-            param_space (dict): Parameter search space
-            X_train: Training features
-            y_train: Training targets
-            metric_func (callable): Scoring function
-            maximize (bool): Whether to maximize or minimize the score
-
-        Returns:
-            None: Updates solutions and solution_trials attributes
-        """
-        for i in range(len(self.solutions)):
-            params, _ = self.solutions[i]
-            params_key = self._get_params_key(params)
-
-            # Initialize if key doesn't exist
-            if params_key not in self.solution_trials:
-                self.solution_trials[params_key] = 0
-
-            if self.solution_trials[params_key] >= self.abandonment_limit:
-                new_params = self._generate_random_params(param_space)
-                new_params_key = self._get_params_key(new_params)
-                new_score = evaluate_model(model_class, new_params, X_train, y_train, metric_func, self.cv_folds)
-
-                self.solutions[i] = (new_params, new_score)
-                self.solution_trials[new_params_key] = 0
 
     def _get_params_key(self, params):
         """Create a stable hashable key for parameter dictionaries."""

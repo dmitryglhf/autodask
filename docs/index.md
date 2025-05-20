@@ -4,7 +4,7 @@
 
 ## The Distributed AutoML
 
-AutoDask is a lightweight AutoML library that brings together the power of distributed computing with Dask(https://www.dask.org/) and the intelligence of Bee Colony Optimization for hyperparameter tuning.
+AutoDask is a lightweight AutoML library that brings together the power of distributed computing with [Dask](https://www.dask.org/) and the intelligence of Bee Colony Optimization for hyperparameter tuning.
 
 ```commandline
 pip install autodask  <unsupported yet>

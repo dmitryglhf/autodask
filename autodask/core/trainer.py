@@ -63,7 +63,7 @@ class Trainer:
                  metric:str=None,
                  cv_folds:int=None,
                  seed:int=None,
-                 optimization_rounds=30,
+                 optimization_rounds=1,
                  max_ensemble_models=None,
                  models=None,
                  bco_params=None):
@@ -97,14 +97,6 @@ class Trainer:
             list: Sorted list of dictionaries containing trained models, their names and scores
         """
         self.start_time = time.time()
-        if is_classification_task(self.task):
-            kf = StratifiedKFold(n_splits=self.cv_folds,
-                                 shuffle=True,
-                                 random_state=self.seed)
-        else:
-            kf = KFold(n_splits=self.cv_folds,
-                       shuffle=True,
-                       random_state=self.seed)
 
         # Get models based on task or provided model names
         models = self._get_models()
@@ -113,7 +105,7 @@ class Trainer:
         fitted_models = []
 
         # Initialize bee colony optimizer
-        bco = BeeColonyOptimizer(**self.bco_params)
+        bco = BeeColonyOptimizer(task=self.task, **self.bco_params)
 
         # For each model, optimize hyperparameters and train
         for name, (model_class, param_space, param_default) in models.items():
@@ -142,15 +134,15 @@ class Trainer:
                     rounds=self.optimization_rounds,
                     time_limit=remaining_time
                 )
-
                 # Train the model with best parameters
                 model_params = best_params
             else:
+                # Or with default params
                 model_params = param_default
 
             # Get score by using k-fold cross validation
             validation_score = evaluate_model(
-                model_class, model_params, X_train, y_train, self.score_func, self.cv_folds
+                model_class, model_params, X_train, y_train, self.score_func, self.task, self.cv_folds
             )
             self.log.info(f'{name} mean cv-score = {validation_score:.5f}')
 
