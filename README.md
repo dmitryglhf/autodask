@@ -35,7 +35,7 @@ predictions = adsk.predict(X_test)
 - **Automated Machine Learning:** Handles preprocessing, feature engineering, model selection, and hyperparameter tuning
 - **Distributed Computing:** Leverage Dask for parallel processing and efficient resource utilization
 - **Multiple ML Tasks:** Supports classification and regression tasks
-- **Efficient Optimization:** Uses Bee Colony Optimization for intelligent hyperparameter tuning
+- **Efficient Optimization:** Uses Bee Colony Optimization for hyperparameter tuning
 
 ## 🧩 Advanced Usage
 
@@ -50,26 +50,21 @@ adsk = AutoDask(
     time_limit=3600,  # 1 hour time limit
     metric='r2',
     with_tuning=True, # Allow bee optimization for hyperparameters
-    optimization_rounds=50,
+    optimization_rounds=3,
     max_ensemble_models=5,
     models=['lgbm', 'xgboost', 'catboost'],  # Specify models to consider
 )
 
 # Train with advanced options
-adsk.fit(
-    X_train, 
-    y_train,
-    validation_data=(X_val, y_val)
-)
+adsk.fit(X_train, y_train)
 ```
 
 ## 🐝 Bee Colony Optimization
 
-AutoDask implements the Bee Colony Optimization algorithm, a nature-inspired metaheuristic based on the foraging behavior of honey bees:
+AutoDask implements the simplified version of Bee Colony Optimization algorithm, a nature-inspired metaheuristic based on the foraging behavior of honey bees:
 
 - **Employed Bees**: Explore the solution space by testing different model configurations
 - **Onlooker Bees**: Focus on the most promising configurations based on performance metrics
-- **Scout Bees**: Prevent getting stuck in local optima by randomly exploring new configurations
 
 This approach efficiently navigates the vast model configurations with fewer evaluations compared to traditional grid search or random search methods.
 
@@ -82,8 +77,6 @@ adsk = AutoDask(
     bco_params={
         'employed_bees': 20,  # Number of employed bees
         'onlooker_bees': 10,  # Number of onlooker bees
-        'scout_bees': 5,      # Number of scout bees
-        'abandonment_limit': 10,  # Limit before abandoning a solution
         'exploration_rate': 0.3   # Balance between exploration and exploitation
     }
 )
