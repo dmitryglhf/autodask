@@ -10,22 +10,32 @@ METRICS_REPOSITORY: Dict[str, Dict[str, Any]] = {
         'func': metrics.accuracy_score,
         'task': 'classification',
         'maximize': True,
-        'default_for_task': True
     },
     'f1': {
         'func': metrics.f1_score,
         'task': 'classification',
-        'maximize': True
+        'maximize': True,
     },
     'precision': {
         'func': metrics.precision_score,
         'task': 'classification',
-        'maximize': True
+        'maximize': True,
     },
     'recall': {
         'func': metrics.recall_score,
         'task': 'classification',
-        'maximize': True
+        'maximize': True,
+    },
+    'roc_auc': {
+        'func': metrics.roc_auc_score,
+        'task': 'classification',
+        'maximize': True,
+    },
+    'log_loss': {
+        'func': metrics.log_loss,
+        'task': 'classification',
+        'maximize': True,
+        'default_for_task': True
     },
 
     # Regression metrics
