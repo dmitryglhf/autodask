@@ -26,7 +26,7 @@ class WeightedAverageBlender(BaseEstimator):
         >>> # Models must be fitted
         >>> models = [{'model': fitted_model1, 'name': 'Model1'},
         ...           {'model': fitted_model2, 'name': 'Model2'}]
-        >>> blender = WeightedAverageBlender(models, task='classification')
+        >>> blender = WeightedAverageBlender(models, task='classification', n_classes=3)
         >>> blender.fit(X_train, y_train)
         >>> preds = blender.predict(X_test)
 
@@ -51,8 +51,8 @@ class WeightedAverageBlender(BaseEstimator):
     def _fit(self, X, y):
         """Optimize model weights"""
         if len(self.fitted_models) == 1:
+            self.log.info(f"Got only one model; using weight 1.0 for {self.fitted_models[0]['name']}")
             self.weights = np.array([1.0])
-            self.log.info(f"Only one model; using weight 1.0 for {self.fitted_models[0]['name']}")
             return self
 
         self.log.info(f"Starting weight optimization for models: {[model['name'] for model in self.fitted_models]}")
@@ -94,6 +94,12 @@ class WeightedAverageBlender(BaseEstimator):
         preds_list = [model['model'].predict_proba(X) for model in self.fitted_models]
         return np.average(np.stack(preds_list), axis=0, weights=self.weights)
 
+    def fit_predict(self, X, y):
+        return self.fit(X, y).predict(X)
+
+    def fit_predict_proba(self, X, y):
+        return self.fit(X, y).predict_proba(X)
+
     def _blend_predictions(self, predictions: list[np.ndarray], weights: np.ndarray, return_labels: bool = True):
         """Blend predictions using weighted average"""
         blended = np.average(predictions, axis=0, weights=weights)
@@ -131,7 +137,7 @@ class WeightedAverageBlender(BaseEstimator):
                     "All ensemble models must be fitted."
                 )
 
-        if self.task == 'classification' and not self.n_classes:
+        if self.task == 'classification' and self.n_classes is None:
             raise ValueError(
                 "Number of classes (n_classes) must be specified for classification tasks. "
             )

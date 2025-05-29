@@ -23,6 +23,7 @@ nav:
       - Advanced usage: autodask/advanced_usage.md
   - API:
       - Orchestrating class: autodask/main.md
+      - Preprocessor: autodask/preprocessor.md
       - Trainer: autodask/trainer.md
       - Bee Tuner: autodask/tuner.md
       - Blender: autodask/blender.md

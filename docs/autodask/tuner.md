@@ -1,4 +1,4 @@
-# BeeColonyOptimizer Module Documentation
+# BeeColonyOptimizer Module
 
 ## Overview
 

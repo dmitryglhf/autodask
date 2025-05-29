@@ -100,7 +100,7 @@ class Preprocessor(BaseEstimator, TransformerMixin):
         return self.target_encoder_.inverse_transform(y_encoded)
 
     def fit_transform(self, X, y=None, **fit_params):
-        out = self.fit(X, y, **fit_params).transform(X)
+        out = self.fit(X, y).transform(X)
         if y is not None:
             y_tr = self.transform_target(y)
             return out, y_tr

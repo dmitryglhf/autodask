@@ -5,7 +5,7 @@
 # AutoDask
 ### AutoDask is currently in the development stage, which is why some modules may not work or may have errors.
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 </div>
@@ -32,7 +32,7 @@ predictions = adsk.predict(X_test)
 
 ## 🛠️ Features
 
-- **Automated Machine Learning:** Handles preprocessing, feature engineering, model selection, and hyperparameter tuning
+- **Automated Machine Learning:** Handles preprocessing, feature engineering (WIP), model selection, and hyperparameter tuning
 - **Distributed Computing:** Leverage Dask for parallel processing and efficient resource utilization
 - **Multiple ML Tasks:** Supports classification and regression tasks
 - **Efficient Optimization:** Uses Bee Colony Optimization for hyperparameter tuning
@@ -75,8 +75,8 @@ from autodask.main import AutoDask
 adsk = AutoDask(
     task='classification',
     bco_params={
-        'employed_bees': 20,  # Number of employed bees
-        'onlooker_bees': 10,  # Number of onlooker bees
+        'employed_bees': 3,  # Number of employed bees
+        'onlooker_bees': 3,  # Number of onlooker bees
         'exploration_rate': 0.3   # Balance between exploration and exploitation
     }
 )
