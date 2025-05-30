@@ -24,15 +24,14 @@ class Trainer:
 
     This class handles the complete model training pipeline including:
     - Model selection based on task type
-    - Hyperparameter optimization using Bee Colony Algorithm
-    - Cross-validation or hold-out validation
+    - Hyperparameter optimization
+    - Cross-validation
     - Model evaluation and ranking
 
     Args:
         task (str): Machine learning task type ('classification' or 'regression')
         with_tuning (bool, optional): Whether to perform hyperparameter tuning. Defaults to None.
         time_limit (int, optional): Maximum training time in seconds. Defaults to None.
-        metric (str, optional): Evaluation metric to optimize. Defaults to None.
         cv_folds (int, optional): Number of cross-validation folds. Defaults to None.
         seed (int, optional): Random seed for reproducibility. Defaults to None.
         optimization_rounds (int, optional): Number of optimization rounds for tuning. Defaults to 30.
@@ -60,7 +59,6 @@ class Trainer:
                  task: str,
                  with_tuning=None,
                  time_limit=None,
-                 metric:str=None,
                  cv_folds:int=None,
                  seed:int=None,
                  optimization_rounds=1,
@@ -81,9 +79,7 @@ class Trainer:
         self.log = get_logger(self.__class__.__name__)
 
         # Setup metric function
-        self.score_func, self.metric_name, self.maximize_metric = (
-            setup_metric(metric_name=metric, task=task)
-        )
+        self.score_func, self.metric_name, self.maximize_metric = setup_metric(task=task)
 
     def launch(self, X_train: Union[pd.DataFrame], y_train: Union[np.ndarray]):
         """Execute the complete training pipeline.
@@ -91,7 +87,6 @@ class Trainer:
         Args:
             X_train (pd.DataFrame): Training features
             y_train (np.ndarray): Training targets
-            validation_data (tuple, optional): Optional (X_val, y_val) for hold-out validation
 
         Returns:
             list: Sorted list of dictionaries containing trained models, their names and scores
@@ -144,7 +139,7 @@ class Trainer:
             validation_score = evaluate_model(
                 model_class, model_params, X_train, y_train, self.score_func, self.task, self.cv_folds
             )
-            self.log.info(f'{name} mean cv-score = {validation_score:.5f}')
+            self.log.info(f'{name} mean {self.metric_name} cv-score = {validation_score:.5f}')
 
             final_model = model_class(**model_params)
             final_model.fit(X_train, y_train)
@@ -153,7 +148,7 @@ class Trainer:
             fitted_models.append({
                 'model': final_model,
                 'name': name,
-                'score': validation_score if self.maximize_metric else -validation_score
+                'score': -validation_score
             })
 
         # Sort models by performance

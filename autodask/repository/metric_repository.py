@@ -3,7 +3,7 @@ from typing import Callable, Dict, Any, Tuple
 import numpy as np
 
 
-# Main metrics repository
+# Main metrics repository with their meta-data
 METRICS_REPOSITORY: Dict[str, Dict[str, Any]] = {
     # Classification metrics
     'accuracy': {
@@ -34,7 +34,7 @@ METRICS_REPOSITORY: Dict[str, Dict[str, Any]] = {
     'log_loss': {
         'func': metrics.log_loss,
         'task': 'classification',
-        'maximize': True,
+        'maximize': False,
         'default_for_task': True
     },
 

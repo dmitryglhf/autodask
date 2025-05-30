@@ -23,27 +23,3 @@ def setup_metric(metric_name:str=None, task:str=None):
 
 def get_n_classes(y):
     return len(np.unique(y))
-
-def prepare_input_arrays(X, y):
-    # X processing
-    if X is not None:
-        if not isinstance(X, np.ndarray):
-            if isinstance(X, pd.DataFrame):
-                X = X.values
-            else:
-                X = np.array(X)
-
-    # y processing
-    if y is not None:
-        if isinstance(y, str):
-            try:
-                y = X[y]
-                y = np.array(y)
-            except:
-                raise ValueError(f"No column name {y}")
-        elif isinstance(y, pd.DataFrame) or isinstance(y, pd.Series):
-            y = y.values
-        else:
-            y = np.array(y)
-
-    return X, y

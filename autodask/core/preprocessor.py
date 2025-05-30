@@ -1,3 +1,5 @@
+from typing import Optional, Union, Tuple
+
 import pandas as pd
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -10,6 +12,45 @@ from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 
 from autodask.utils.log import get_logger
+
+
+def prepare_input_arrays(
+    X: Optional[Union[np.ndarray, pd.DataFrame, list]],
+    y: Optional[Union[np.ndarray, pd.DataFrame, pd.Series, str, list]]
+) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    """Check input arrays and convert it to NumPy-arrays"""
+    # Process X
+    X_array = None
+    if X is not None:
+        if isinstance(X, pd.DataFrame):
+            X_array = X
+        elif not isinstance(X, np.ndarray):
+            try:
+                X_array = pd.DataFrame(np.array(X))
+            except Exception as e:
+                raise TypeError(f"Failed to convert X: {str(e)}")
+        else:
+            X_array = pd.DataFrame(X)
+
+    # Process y
+    y_array = None
+    if y is not None:
+        if isinstance(y, str):
+            if X_array is None or not isinstance(X_array, pd.DataFrame):
+                raise ValueError("Column reference only valid when X is pandas DataFrame")
+            try:
+                y_array = X_array.pop(y)
+            except KeyError:
+                raise ValueError(f"Column '{y}' not found in X")
+        elif not isinstance(y, np.ndarray):
+            try:
+                y_array = np.array(y)
+            except Exception as e:
+                raise TypeError(f"Failed to convert y: {str(e)}")
+        else:
+            y_array = y
+
+    return X_array, y_array
 
 
 class Preprocessor(BaseEstimator, TransformerMixin):
@@ -33,8 +74,15 @@ class Preprocessor(BaseEstimator, TransformerMixin):
         self.log = get_logger(self.__class__.__name__)
 
     def fit(self, X, y=None):
-        self.numeric_features_ = X.select_dtypes(include=[np.number]).columns.tolist()
-        self.categorical_features_ = X.select_dtypes(
+        X_prepared, y_prepared = prepare_input_arrays(X, y)
+        if not isinstance(X_prepared, pd.DataFrame):
+            raise ValueError(
+                "Preprocessing is only supported with pandas DataFrame input. "
+                f"Got {type(X_prepared)} instead. "
+            )
+
+        self.numeric_features_ = X_prepared.select_dtypes(include=[np.number]).columns.tolist()
+        self.categorical_features_ = X_prepared.select_dtypes(
             include=['object', 'category', 'bool']).columns.tolist()
 
         # numeric pipeline
@@ -70,16 +118,14 @@ class Preprocessor(BaseEstimator, TransformerMixin):
         self.transformer_.fit(X)
 
         # target encoder (if handed)
-        if y is not None and self.target_encoding:
-            y_series = pd.Series(y)
+        if y_prepared is not None and self.target_encoding:
+            y_series = pd.Series(y_prepared) if not isinstance(y_prepared, pd.Series) else y_prepared
             if (y_series.dtype.kind not in 'ifc') or y_series.dtype == bool:
-                # strings / categories / bool --> LabelEncoder
                 self.target_encoder_ = LabelEncoder()
                 self.target_encoder_.fit(y_series)
                 self.log.info('Target encoder fitted with classes: %s',
-                              list(self.target_encoder_.classes_))
+                            list(self.target_encoder_.classes_))
             else:
-                # except of numeric target
                 self.target_encoder_ = None
 
         return self

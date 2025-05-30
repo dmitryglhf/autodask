@@ -9,22 +9,17 @@ from autodask.core.blender import WeightedAverageBlender
 from autodask.core.preprocessor import Preprocessor
 from autodask.core.trainer import Trainer
 from autodask.utils.log import get_logger
-from autodask.utils.regular_functions import is_classification_task, get_n_classes, prepare_input_arrays
+from autodask.utils.regular_functions import is_classification_task, get_n_classes
 
 
 class AutoDask:
     """Orchestrating class for AutoDask.
-
-    This class provides an end-to-end automated machine learning solution,
-    handling preprocessing, model selection, hyperparameter tuning, and ensemble construction.
-    It supports both classification and regression tasks with parallel execution using Dask.
 
     Args:
         task (str): The machine learning task type. Supported values: 'classification', 'regression'.
         n_jobs (int, optional): Number of parallel jobs to run. Defaults to 4.
         with_tuning (bool, optional): Whether to perform hyperparameter tuning. Defaults to False.
         time_limit (int, optional): Maximum time in seconds for the automl process. Defaults to 300 (5 minutes).
-        metric (str, optional): Evaluation metric to optimize. If None, defaults to task-appropriate metric.
         cv_folds (int, optional): Number of cross-validation folds. Defaults to 5.
         seed (int, optional): Random seed for reproducibility. Defaults to 101.
         optimization_rounds (int, optional): Number of optimization rounds for hyperparameter tuning. Defaults to 30.
@@ -53,7 +48,6 @@ class AutoDask:
             n_jobs=4,
             with_tuning=False,
             time_limit=60*5,
-            metric:str=None,
             cv_folds=5,
             seed=42,
             optimization_rounds=1,
@@ -66,7 +60,6 @@ class AutoDask:
         self.n_jobs = n_jobs
         self.with_tuning = with_tuning
         self.time_limit = time_limit
-        self.metric = metric
         self.cv_folds = cv_folds
         self.seed = seed
         self.optimization_rounds = optimization_rounds
@@ -113,14 +106,10 @@ class AutoDask:
             X_train, y_train = self.preprocessor.fit_transform(X_train, y_train)
             self.log.info('Features preprocessing finished')
 
-        # Check for correctness and convert to numpy arrays
-        X_train, y_train = prepare_input_arrays(X_train, y_train)
-
         trainer = Trainer(
             task=self.task,
             with_tuning=self.with_tuning,
             time_limit=self.time_limit,
-            metric=self.metric,
             cv_folds=self.cv_folds,
             seed=self.seed,
             optimization_rounds=self.optimization_rounds,
@@ -134,7 +123,6 @@ class AutoDask:
         self.ensemble = WeightedAverageBlender(
             best_models,
             task=self.task,
-            metric=self.metric,
             n_classes=self.n_classes
         )
         self.ensemble.fit(X_train, y_train)
@@ -143,16 +131,7 @@ class AutoDask:
         return self
 
     def predict(self, X_test):
-        """Make predictions on new data using the trained ensemble.
-
-        Args:
-            X_test: Input features to predict on. Same formats as X_train in fit().
-
-        Returns:
-            Array of predictions. For classification, returns class labels.
-            For regression, returns continuous values.
-        """
-        X_test, _ = prepare_input_arrays(X_test, y=None)
+        """Make predictions on new data using the trained ensemble"""
         if self.preprocessor:
             X_test_prep = self.preprocessor.transform(X_test)
             y_pred_enc = self.ensemble.predict(X_test_prep)
@@ -161,15 +140,7 @@ class AutoDask:
             return self.ensemble.predict(X_test)
 
     def predict_proba(self, X_test):
-        """Make predictions on new data using the trained ensemble.
-
-        Args:
-            X_test: Input features to predict on. Same formats as X_train in fit().
-
-        Returns:
-            Array of predictions with class probabilities.
-        """
-        X_test, _ = prepare_input_arrays(X_test, y=None)
+        """Make predictions on new data using the trained ensemble"""
         if self.preprocessor:
             X_test_prep = self.preprocessor.transform(X_test)
             return self.ensemble.predict_proba(X_test_prep)
@@ -177,20 +148,12 @@ class AutoDask:
             self.ensemble.predict_proba(X_test)
 
     def get_fitted_ensemble(self):
-        """Get the trained ensemble model.
-
-        Returns:
-            WeightedAverageBlender: The fitted ensemble model.
-        """
+        """Get the trained ensemble model"""
         if self.ensemble:
             return self.ensemble
 
     def get_fitted_preprocessor(self):
-        """Get the fitted preprocessing pipeline.
-
-        Returns:
-            Preprocessor: The fitted preprocessing pipeline.
-        """
+        """Get the fitted preprocessing pipeline"""
         if self.preprocessor:
             return self.preprocessor
 

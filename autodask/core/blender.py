@@ -46,7 +46,7 @@ class WeightedAverageBlender(BaseEstimator):
         self.weights = None
 
         self.log = get_logger(self.__class__.__name__)
-        self.score_func, self.metric_name, self.is_maximize_metric = setup_metric(task=task)
+        self.score_func, _, _ = setup_metric(task=task)
 
     def _fit(self, X, y):
         """Optimize model weights"""
@@ -67,7 +67,7 @@ class WeightedAverageBlender(BaseEstimator):
         def objective(weights):
             blended_pred = self._blend_predictions(preds_list, weights, return_labels=False)
             score = self.score_func(y, blended_pred)
-            return score if self.is_maximize_metric else -score
+            return score
 
         result = minimize(objective, initial_weights,
                           bounds=bounds, constraints=constraints,

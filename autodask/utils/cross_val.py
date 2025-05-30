@@ -44,7 +44,10 @@ def evaluate_model(model_class, params, X, y, metric_func, task: str, cv_folds=5
             # Train and evaluate model on this fold
             model = model_class(**params)
             model.fit(X_train, y_train)
-            y_pred = model.predict(X_val)
+            if is_classification_task(task):
+                y_pred = model.predict_proba(X_val)
+            else:
+                y_pred = model.predict(X_val)
             fold_score = metric_func(y_val, y_pred)
             scores.append(fold_score)
 
