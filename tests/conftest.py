@@ -9,7 +9,7 @@ from sklearn.datasets import make_classification, make_regression
 def classification_data():
     """Creates test data for classification"""
     X, y = make_classification(n_samples=100, n_features=10, n_classes=3,
-                               n_redundant=0, random_state=42)
+                               n_informative=3, n_redundant=0, random_state=42)
     return X, y
 
 
@@ -58,7 +58,7 @@ def fitted_binary_classification_models(binary_classification_data):
 
     return [
         {'model': model1, 'name': 'RandomForest'},
-        {'model': model2, 'name': 'LogisticRegression'}ы
+        {'model': model2, 'name': 'LogisticRegression'}
     ]
 
 

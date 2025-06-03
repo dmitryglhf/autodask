@@ -3,7 +3,7 @@ import os
 from typing import Dict, Tuple, Type, Any
 
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from xgboost import XGBClassifier, XGBRegressor
 from lightgbm import LGBMClassifier, LGBMRegressor
 from catboost import CatBoostClassifier, CatBoostRegressor
@@ -46,10 +46,10 @@ class AtomizedModel:
                 param_spaces.get('l2_logreg', {}),
                 param_default.get('l2_logreg', {}),
             ),
-            'extra_trees': (
-                ExtraTreesClassifier,
-                param_spaces.get('extra_trees_clf', {}),
-                param_default.get('extra_trees_clf', {}),
+            'random_forest': (
+                RandomForestClassifier,
+                param_spaces.get('rf_clf', {}),
+                param_default.get('rf_clf', {}),
             ),
             'lgbm': (
                 LGBMClassifier,
@@ -82,10 +82,10 @@ class AtomizedModel:
                 param_spaces.get('l2_linreg', {}),
                 param_default.get('l2_linreg', {}),
             ),
-            'extra_trees': (
-                ExtraTreesRegressor,
-                param_spaces.get('extra_trees_reg', {}),
-                param_default.get('extra_trees_reg', {}),
+            'random_forest': (
+                RandomForestRegressor,
+                param_spaces.get('rf_reg', {}),
+                param_default.get('rf_reg', {}),
             ),
             'lgbm': (
                 LGBMRegressor,

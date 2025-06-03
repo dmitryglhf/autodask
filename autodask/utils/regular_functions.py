@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 from autodask.repository.metric_repository import get_metric, get_default_metric
 
