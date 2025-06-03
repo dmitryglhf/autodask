@@ -121,15 +121,36 @@ class WeightedAverageBlender(BaseEstimator):
             return blended
 
     def _get_model_predictions(self, X):
-        """Get predictions from all models"""
+        """Get predictions from all models with method availability checks"""
         preds_list = []
-        for model in self.fitted_models:
-            est = model['model']
-            if is_classification_task(self.task):
-                preds = est.predict_proba(X)
-            else:
-                preds = est.predict(X)
-            preds_list.append(np.asarray(preds))
+
+        for model_info in self.fitted_models:
+            model = model_info['model']
+
+            try:
+                if is_classification_task(self.task):
+                    if not hasattr(model, 'predict_proba'):
+                        raise AttributeError(
+                            f"Model {model_info.get('name', model.__class__.__name__)} "
+                            f"does not have predict_proba() method required for classification"
+                        )
+                    preds = model.predict_proba(X)
+                else:
+                    if not hasattr(model, 'predict'):
+                        raise AttributeError(
+                            f"Model {model_info.get('name', model.__class__.__name__)} "
+                            f"does not have predict() method"
+                        )
+                    preds = model.predict(X)
+
+                preds_list.append(np.asarray(preds))
+
+            except Exception as e:
+                model_name = model_info.get('name', model.__class__.__name__)
+                raise RuntimeError(
+                    f"Error getting predictions from model {model_name}: {str(e)}"
+                ) from e
+
         return preds_list
 
     def _input_validation(self):
