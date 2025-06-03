@@ -5,18 +5,16 @@ from sklearn.exceptions import NotFittedError
 from scipy.optimize import minimize
 
 from autodask.utils.log import get_logger
-from autodask.utils.regular_functions import is_classification_task, setup_metric
+from autodask.utils.regular_functions import is_classification_task, setup_metric, get_n_classes
 
 
 class WeightedAverageBlender(BaseEstimator):
     """Weighted average ensemble blender.
 
     Parameters:
-        fitted_models (list): List of dictionaries containing trained models.
+        fitted_models (list): List or list of dictionaries containing trained models.
         task (str): 'classification' or 'regression'.
         max_iter (int, optional): Maximum optimization iterations.
-        tol (float, optional): Tolerance for early stopping.
-        n_classes (int, optional): Number of classes (for classification).
 
     Attributes:
         weights (np.ndarray): Optimized weights for each model.
@@ -24,9 +22,11 @@ class WeightedAverageBlender(BaseEstimator):
     Examples:
 
         >>> # Models must be fitted
-        >>> models = [{'model': fitted_model1, 'name': 'Model1'},
+        >>> models = [{'model': fitted_model1},
         ...           {'model': fitted_model2, 'name': 'Model2'}]
-        >>> blender = WeightedAverageBlender(models, task='classification', n_classes=3)
+        >>> # Or
+        >>> models = [fitted_model1, fitted_model2]
+        >>> blender = WeightedAverageBlender(models, task='classification')
         >>> blender.fit(X_train, y_train)
         >>> preds = blender.predict(X_test)
 
@@ -35,12 +35,13 @@ class WeightedAverageBlender(BaseEstimator):
     def __init__(self,
                  fitted_models: list,
                  task: str,
-                 max_iter: int = 100,
-                 n_classes: int = None):
+                 max_iter: int = 100):
         self.fitted_models = fitted_models
         self.task = task
         self.max_iter = max_iter
-        self.n_classes = n_classes
+        self.n_classes = None
+
+        # Result
         self.weights = None
 
         self.log = get_logger(self.__class__.__name__)
@@ -74,11 +75,18 @@ class WeightedAverageBlender(BaseEstimator):
 
     def fit(self, X, y):
         """Fit models ensemble"""
-        self._validate_before_blending()
+        # Preparation
+        self._input_validation()
+        self._models_validation()
+        self.n_classes = get_n_classes(y)
+
+        # Get weights
         self._fit(X, y)
+
+        # Return result
         sorted_pairs = sorted(zip(self.fitted_models, self.weights), key=lambda x: x[1], reverse=True)
-        weight_formula = " + ".join([f"{round(w, 3)}*{model['name']}" for model, w in sorted_pairs])
-        self.log.info(f"Model weights: {weight_formula}")
+        weight_formula = " + ".join([f"{round(w, 3)} * {model['name']}" for model, w in sorted_pairs])
+        self.log.info(f"Final prediction = {weight_formula}")
         return self
 
     def predict(self, X):
@@ -124,7 +132,35 @@ class WeightedAverageBlender(BaseEstimator):
             preds_list.append(np.asarray(preds))
         return preds_list
 
-    def _validate_before_blending(self):
+    def _input_validation(self):
+        processed_models = []
+
+        for item in self.fitted_models:
+            if hasattr(item, '__class__') and hasattr(item.__class__, '__name__'):
+                model_dict = {
+                    'model': item,
+                    'name': item.__class__.__name__
+                }
+                processed_models.append(model_dict)
+            elif isinstance(item, dict):
+                if 'model' not in item:
+                    raise ValueError("Model dictionary must contain 'model' key")
+
+                model = item['model']
+                if not (hasattr(model, '__class__') and hasattr(model.__class__, '__name__')):
+                    raise ValueError(f"Invalid model object: {model}")
+
+                model_dict = item.copy()
+                if 'name' not in model_dict or not str(model_dict.get('name', '')).strip():
+                    model_dict['name'] = model.__class__.__name__
+                processed_models.append(model_dict)
+
+            else:
+                raise ValueError(f"Invalid item in models list: {item}. Must be either a model or a dictionary")
+
+        self.fitted_models = processed_models
+
+    def _models_validation(self):
         for model_dict in self.fitted_models:
             model = model_dict['model']
             model_name = model_dict['name']
@@ -136,7 +172,7 @@ class WeightedAverageBlender(BaseEstimator):
                     "All ensemble models must be fitted."
                 )
 
-        if self.task == 'classification' and self.n_classes is None:
+        if self.task == 'classification' and self.n_classes == 1:
             raise ValueError(
-                "Number of classes (n_classes) must be specified for classification tasks. "
+                "For classification tasks, `n_classes` must be > 1 (got n_classes=1)."
             )
