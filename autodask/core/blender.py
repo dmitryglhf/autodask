@@ -36,12 +36,10 @@ class WeightedAverageBlender(BaseEstimator):
                  fitted_models: list,
                  task: str,
                  max_iter: int = 100,
-                 tol: float = 1e-6,
                  n_classes: int = None):
         self.fitted_models = fitted_models
         self.task = task
         self.max_iter = max_iter
-        self.tol = tol
         self.n_classes = n_classes
         self.weights = None
 
@@ -78,8 +76,9 @@ class WeightedAverageBlender(BaseEstimator):
         """Fit models ensemble"""
         self._validate_before_blending()
         self._fit(X, y)
-        model_weights = {model['name']: round(w, 6) for model, w in zip(self.fitted_models, self.weights)}
-        self.log.info(f"Obtained weight-model pairs: {model_weights}")
+        sorted_pairs = sorted(zip(self.fitted_models, self.weights), key=lambda x: x[1], reverse=True)
+        weight_formula = " + ".join([f"{round(w, 3)}*{model['name']}" for model, w in sorted_pairs])
+        self.log.info(f"Model weights: {weight_formula}")
         return self
 
     def predict(self, X):

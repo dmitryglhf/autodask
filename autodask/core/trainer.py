@@ -108,7 +108,7 @@ class Trainer:
                 self.log.info(f"Time limit reached")
                 break
 
-            self.log.info(f"Fitting {name} model...")
+            self.log.info(f"Training {name} model...")
 
             # Get remaining time for current model
             remaining_time = None

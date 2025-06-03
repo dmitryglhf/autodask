@@ -73,18 +73,14 @@
     "verbose": 0
   },
   "extra_trees_clf": {
-    "n_estimators": 100,
     "criterion": "gini",
-    "max_depth": null,
     "min_samples_split": 2,
     "min_samples_leaf": 1,
     "max_features": "sqrt",
     "bootstrap": false
   },
   "extra_trees_reg": {
-    "n_estimators": 100,
     "criterion": "squared_error",
-    "max_depth": null,
     "min_samples_split": 2,
     "min_samples_leaf": 1,
     "max_features": 1.0,
