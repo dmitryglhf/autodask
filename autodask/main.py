@@ -45,7 +45,7 @@ class AutoDask:
     def __init__(
             self,
             task: str,
-            n_jobs=4,
+            n_jobs=1,
             with_tuning=False,
             time_limit=60*5,
             cv_folds=5,
@@ -108,22 +108,18 @@ class AutoDask:
 
         trainer = Trainer(
             task=self.task,
-            with_tuning=self.with_tuning,
             time_limit=self.time_limit,
             cv_folds=self.cv_folds,
             seed=self.seed,
-            optimization_rounds=self.optimization_rounds,
             max_ensemble_models=self.max_ensemble_models,
             models=self.models,
-            bco_params=self.bco_params
         )
 
         best_models = trainer.launch(X_train, y_train)
 
         self.ensemble = WeightedAverageBlender(
             best_models,
-            task=self.task,
-            n_classes=self.n_classes
+            task=self.task
         )
         self.ensemble.fit(X_train, y_train)
 

@@ -5,12 +5,11 @@ import numpy as np
 import pandas as pd
 
 # import dask.array as da
+from dask import delayed, compute
 
-from autodask.core.tuner import BeeColonyOptimizer
 from autodask.utils.log import get_logger
 from autodask.utils.cross_val import evaluate_model
 from autodask.repository.model_repository import AtomizedModel
-from sklearn.model_selection import KFold, StratifiedKFold
 
 import warnings
 
@@ -57,23 +56,18 @@ class Trainer:
 
     def __init__(self,
                  task: str,
-                 with_tuning=None,
                  time_limit=None,
-                 cv_folds:int=None,
+                 cv_folds:int=5,
                  seed:int=None,
-                 optimization_rounds=1,
                  max_ensemble_models=None,
-                 models=None,
-                 bco_params=None):
+                 models=None):
         self.task = task
-        self.with_tuning = with_tuning
         self.time_limit = time_limit
         self.cv_folds = cv_folds
         self.seed = seed
-        self.optimization_rounds = optimization_rounds
         self.max_ensemble_models = max_ensemble_models
         self.model_names = models
-        self.bco_params = bco_params or {}
+
         self.start_time = None
 
         self.log = get_logger(self.__class__.__name__)
@@ -97,66 +91,53 @@ class Trainer:
         models = self._get_models()
 
         self.log.info(f'Starting models training (cv_folds = {self.cv_folds})')
-        fitted_models = []
-
-        # Initialize bee colony optimizer
-        bco = BeeColonyOptimizer(task=self.task, **self.bco_params)
 
         # For each model, optimize hyperparameters and train
-        for name, (model_class, param_space, param_default) in models.items():
+        def train_single_model(name, model_class, param_default):
             if self._check_time_limit():
-                self.log.info(f"Time limit reached")
-                break
+                self.log.info(f"Time limit reached for model {name}")
+                return None
 
             self.log.info(f"Training {name} model...")
 
-            # Get remaining time for current model
-            remaining_time = None
-            if self.time_limit:
-                elapsed = time.time() - self.start_time
-                remaining_time = max(0, self.time_limit - elapsed)
-
-            # Optimize hyperparameters with bee colony algorithm
-            if self.with_tuning:
-                self.log.info(f"Optimizing {name} model...")
-
-                best_params, best_score = bco.optimize(
-                    model_class=model_class,
-                    param_space=param_space,
-                    X_train=X_train, y_train=y_train,
-                    metric_func=self.score_func,
-                    maximize=self.maximize_metric,
-                    rounds=self.optimization_rounds,
-                    time_limit=remaining_time
-                )
-                # Train the model with best parameters
-                model_params = best_params
-            else:
-                # Or with default params
-                model_params = param_default
-
-            # Get score by using k-fold cross validation
             validation_score = evaluate_model(
-                model_class, model_params, X_train, y_train, self.score_func, self.task, self.cv_folds
+                model_class, param_default, X_train, y_train, self.score_func, self.task, self.cv_folds
             )
             self.log.info(f'{name} mean {self.metric_name} cv-score = {validation_score:.5f}')
 
-            final_model = model_class(**model_params)
+            final_model = model_class(**param_default)
             final_model.fit(X_train, y_train)
 
-            # Store model with its score
-            fitted_models.append({
+            return {
                 'model': final_model,
                 'name': name,
-                'score': -validation_score
-            })
+                'score': validation_score
+            }
+
+        delayed_tasks = [
+            delayed(train_single_model)(name, model_class, param_default)
+            for name, (model_class, _, param_default) in models.items()
+        ]
+
+        results = compute(*delayed_tasks, scheduler='threads')
+
+        # Remove any failed/None models
+        fitted_models = [res for res in results if res is not None]
 
         # Sort models by performance
-        fitted_models.sort(key=lambda x: x['score'], reverse=True)
+        fitted_models.sort(key=lambda x: x['score'], reverse=False)
 
-        # Return the best ensemble
         if not fitted_models:
             raise ValueError("No models were successfully trained.")
+
+        self.log.info("\nModel Ranking:")
+        self.log.info(f"{'Rank':<5} {'Name':<15} {'Score':<10}")
+        self.log.info("-" * 32)
+
+        for idx, model_info in enumerate(fitted_models[:min(len(fitted_models), self.max_ensemble_models)], start=1):
+            name = model_info['name']
+            score = model_info['score']
+            self.log.info(f"{idx:<5} {name:<15} {score:<10.5f}")
 
         return fitted_models[:min(len(fitted_models), self.max_ensemble_models)]
 

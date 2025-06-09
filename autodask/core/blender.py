@@ -154,32 +154,33 @@ class WeightedAverageBlender(BaseEstimator):
         return preds_list
 
     def _input_validation(self):
-        processed_models = []
-
-        for item in self.fitted_models:
-            if hasattr(item, '__class__') and hasattr(item.__class__, '__name__'):
-                model_dict = {
-                    'model': item,
-                    'name': item.__class__.__name__
-                }
-                processed_models.append(model_dict)
-            elif isinstance(item, dict):
-                if 'model' not in item:
-                    raise ValueError("Model dictionary must contain 'model' key")
-
-                model = item['model']
-                if not (hasattr(model, '__class__') and hasattr(model.__class__, '__name__')):
-                    raise ValueError(f"Invalid model object: {model}")
-
-                model_dict = item.copy()
-                if 'name' not in model_dict or not str(model_dict.get('name', '')).strip():
-                    model_dict['name'] = model.__class__.__name__
-                processed_models.append(model_dict)
-
-            else:
-                raise ValueError(f"Invalid item in models list: {item}. Must be either a model or a dictionary")
-
-        self.fitted_models = processed_models
+        ...
+        # processed_models = []
+        #
+        # for item in self.fitted_models:
+        #     if hasattr(item, '__class__') and hasattr(item.__class__, '__name__'):
+        #         model_dict = {
+        #             'model': item,
+        #             'name': item.__class__.__name__
+        #         }
+        #         processed_models.append(model_dict)
+        #     elif isinstance(item, dict):
+        #         if 'model' not in item:
+        #             raise ValueError("Model dictionary must contain 'model' key")
+        #
+        #         model = item['model']
+        #         if not (hasattr(model, '__class__') and hasattr(model.__class__, '__name__')):
+        #             raise ValueError(f"Invalid model object: {model}")
+        #
+        #         model_dict = item.copy()
+        #         if 'name' not in model_dict or not str(model_dict.get('name', '')).strip():
+        #             model_dict['name'] = model.__class__.__name__
+        #         processed_models.append(model_dict)
+        #
+        #     else:
+        #         raise ValueError(f"Invalid item in models list: {item}. Must be either a model or a dictionary")
+        #
+        # self.fitted_models = processed_models
 
     def _models_validation(self):
         for model_dict in self.fitted_models:
