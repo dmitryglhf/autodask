@@ -1,12 +1,14 @@
 import json
 import os
-from typing import Dict, Tuple, Type, Any
+from typing import List, Dict, Any
 
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from xgboost import XGBClassifier, XGBRegressor
 from lightgbm import LGBMClassifier, LGBMRegressor
 from catboost import CatBoostClassifier, CatBoostRegressor
+
+from autodask.core.data import ModelContainer
 
 
 class AtomizedModel:
@@ -35,73 +37,93 @@ class AtomizedModel:
             ValueError(f"Parameter space file not found at {cls.DEFAULT_PARAMS_PATH}")
 
     @classmethod
-    def get_classifier_models(cls) -> Dict[str, Tuple[Type, Dict[str, Any], Dict[str, Any]]]:
+    def get_classifier_models(cls) -> List['ModelContainer']:
         """Get classifier models with their hyperparameter spaces."""
         param_spaces = cls._load_parameter_spaces()
         param_default = cls._load_parameter_default()
 
-        models = {
-            'l2_logreg': (
-                LogisticRegression,
-                param_spaces.get('l2_logreg', {}),
-                param_default.get('l2_logreg', {}),
+        models = [
+            ModelContainer(
+                model=LogisticRegression,
+                model_name='l2_logreg',
+                model_task_type='classification',
+                hyperparameters=param_default.get('l2_logreg', {}),
+                search_space=param_spaces.get('l2_logreg', {})
             ),
-            'random_forest': (
-                RandomForestClassifier,
-                param_spaces.get('rf_clf', {}),
-                param_default.get('rf_clf', {}),
+            ModelContainer(
+                model=RandomForestClassifier,
+                model_name='random_forest',
+                model_task_type='classification',
+                hyperparameters=param_default.get('rf_clf', {}),
+                search_space=param_spaces.get('rf_clf', {})
             ),
-            'lgbm': (
-                LGBMClassifier,
-                param_spaces.get('lgbm_clf', {}),
-                param_default.get('lgbm_clf', {})
+            ModelContainer(
+                model=LGBMClassifier,
+                model_name='lgbm',
+                model_task_type='classification',
+                hyperparameters=param_default.get('lgbm_clf', {}),
+                search_space=param_spaces.get('lgbm_clf', {})
             ),
-            'xgboost': (
-                XGBClassifier,
-                param_spaces.get('xgboost_clf', {}),
-                param_default.get('xgboost_clf', {})
+            ModelContainer(
+                model=XGBClassifier,
+                model_name='xgboost',
+                model_task_type='classification',
+                hyperparameters=param_default.get('xgboost_clf', {}),
+                search_space=param_spaces.get('xgboost_clf', {})
             ),
-            'catboost': (
-                CatBoostClassifier,
-                param_spaces.get('catboost_clf', {}),
-                param_default.get('catboost_clf', {})
-            ),
-        }
+            ModelContainer(
+                model=CatBoostClassifier,
+                model_name='catboost',
+                model_task_type='classification',
+                hyperparameters=param_default.get('catboost_clf', {}),
+                search_space=param_spaces.get('catboost_clf', {})
+            )
+        ]
 
         return models
 
     @classmethod
-    def get_regressor_models(cls) -> Dict[str, Tuple[Type, Dict[str, Any], Dict[str, Any]]]:
+    def get_regressor_models(cls) -> List['ModelContainer']:
         """Get regressor models with their hyperparameter spaces."""
         param_spaces = cls._load_parameter_spaces()
         param_default = cls._load_parameter_default()
 
-        models = {
-            'l2_linreg': (
-                LinearRegression,
-                param_spaces.get('l2_linreg', {}),
-                param_default.get('l2_linreg', {}),
+        models = [
+            ModelContainer(
+                model=LinearRegression,
+                model_name='l2_linreg',
+                model_task_type='regression',
+                hyperparameters=param_default.get('l2_linreg', {}),
+                search_space=param_spaces.get('rf_reg', {})
             ),
-            'random_forest': (
-                RandomForestRegressor,
-                param_spaces.get('rf_reg', {}),
-                param_default.get('rf_reg', {}),
+            ModelContainer(
+                model=RandomForestRegressor,
+                model_name='random_forest',
+                model_task_type='regression',
+                hyperparameters=param_default.get('rf_reg', {}),
+                search_space=param_spaces.get('rf_reg', {})
             ),
-            'lgbm': (
-                LGBMRegressor,
-                param_spaces.get('lgbm_reg', {}),
-                param_default.get('lgbm_reg', {})
+            ModelContainer(
+                model=LGBMRegressor,
+                model_name='lgbm',
+                model_task_type='regression',
+                hyperparameters=param_default.get('lgbm_reg', {}),
+                search_space=param_spaces.get('lgbm_reg', {})
             ),
-            'xgboost': (
-                XGBRegressor,
-                param_spaces.get('xgboost_reg', {}),
-                param_default.get('xgboost_reg', {})
+            ModelContainer(
+                model=XGBRegressor,
+                model_name='xgboost',
+                model_task_type='regression',
+                hyperparameters=param_default.get('xgboost_reg', {}),
+                search_space=param_spaces.get('xgboost_reg', {})
             ),
-            'catboost': (
-                CatBoostRegressor,
-                param_spaces.get('catboost_reg', {}),
-                param_default.get('catboost_reg', {})
-            ),
-        }
+            ModelContainer(
+                model=CatBoostRegressor,
+                model_name='catboost',
+                model_task_type='regression',
+                hyperparameters=param_default.get('catboost_reg', {}),
+                search_space=param_spaces.get('catboost_reg', {})
+            )
+        ]
 
         return models

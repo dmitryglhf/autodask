@@ -29,14 +29,11 @@ class Trainer:
 
     Args:
         task (str): Machine learning task type ('classification' or 'regression')
-        with_tuning (bool, optional): Whether to perform hyperparameter tuning. Defaults to None.
         time_limit (int, optional): Maximum training time in seconds. Defaults to None.
         cv_folds (int, optional): Number of cross-validation folds. Defaults to None.
         seed (int, optional): Random seed for reproducibility. Defaults to None.
-        optimization_rounds (int, optional): Number of optimization rounds for tuning. Defaults to 30.
         max_ensemble_models (int, optional): Maximum number of models to keep. Defaults to None.
         models (list, optional): Specific models to use. If None, uses all available. Defaults to None.
-        bco_params (dict, optional): Parameters for Bee Colony Optimizer. Defaults to None.
 
     Attributes:
         score_func (callable): Metric scoring function
@@ -76,47 +73,43 @@ class Trainer:
         self.score_func, self.metric_name, self.maximize_metric = setup_metric(task=task)
 
     def launch(self, X_train: Union[pd.DataFrame], y_train: Union[np.ndarray]):
-        """Execute the complete training pipeline.
-
-        Args:
-            X_train (pd.DataFrame): Training features
-            y_train (np.ndarray): Training targets
-
-        Returns:
-            list: Sorted list of dictionaries containing trained models, their names and scores
-        """
+        """Execute the complete training pipeline."""
         self.start_time = time.time()
 
         # Get models based on task or provided model names
-        models = self._get_models()
+        model_containers = self._get_models()
 
         self.log.info(f'Starting models training (cv_folds = {self.cv_folds})')
 
         # For each model, optimize hyperparameters and train
-        def train_single_model(name, model_class, param_default):
+        def train_single_model(model_container):
+            model_name = model_container.model_name
             if self._check_time_limit():
-                self.log.info(f"Time limit reached for model {name}")
+                self.log.info(f"Time limit reached for model {model_name}")
                 return None
 
-            self.log.info(f"Training {name} model...")
+            self.log.info(f"Training {model_name} model...")
+
+            model_class = model_container.model
+            param_default = model_container.hyperparameters
 
             validation_score = evaluate_model(
                 model_class, param_default, X_train, y_train, self.score_func, self.task, self.cv_folds
             )
-            self.log.info(f'{name} mean {self.metric_name} cv-score = {validation_score:.5f}')
+            self.log.info(f'{model_name} mean {self.metric_name} cv-score = {validation_score:.5f}')
 
             final_model = model_class(**param_default)
             final_model.fit(X_train, y_train)
 
-            return {
-                'model': final_model,
-                'name': name,
-                'score': validation_score
-            }
+            # Update the model container with the trained model and metrics
+            model_container.model = final_model
+            model_container.update_metrics({'validation_score': validation_score})
+
+            return model_container
 
         delayed_tasks = [
-            delayed(train_single_model)(name, model_class, param_default)
-            for name, (model_class, _, param_default) in models.items()
+            delayed(train_single_model)(mc)
+            for mc in model_containers
         ]
 
         results = compute(*delayed_tasks, scheduler='threads')
@@ -125,18 +118,18 @@ class Trainer:
         fitted_models = [res for res in results if res is not None]
 
         # Sort models by performance
-        fitted_models.sort(key=lambda x: x['score'], reverse=False)
+        fitted_models.sort(key=lambda x: x.metrics.get('validation_score', 0), reverse=False)
 
         if not fitted_models:
             raise ValueError("No models were successfully trained.")
 
-        self.log.info("\nModel Ranking:")
+        self.log.info("Model Ranking:")
         self.log.info(f"{'Rank':<5} {'Name':<15} {'Score':<10}")
         self.log.info("-" * 32)
 
-        for idx, model_info in enumerate(fitted_models[:min(len(fitted_models), self.max_ensemble_models)], start=1):
-            name = model_info['name']
-            score = model_info['score']
+        for idx, mc in enumerate(fitted_models[:len(fitted_models)], start=1):
+            name = mc.model_name
+            score = mc.metrics.get('validation_score', 0)
             self.log.info(f"{idx:<5} {name:<15} {score:<10.5f}")
 
         return fitted_models[:min(len(fitted_models), self.max_ensemble_models)]
@@ -156,7 +149,7 @@ class Trainer:
 
         # Filter models if specific ones were requested
         if self.model_names:
-            models = {name: model for name, model in all_models.items() if name in self.model_names}
+            models = [mc for mc in all_models if mc.model_name in self.model_names]
             if not models:
                 self.log.info(
                     f"None of the specified models {self.model_names} were found. Using all available models.")

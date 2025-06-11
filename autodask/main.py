@@ -199,7 +199,7 @@ class AutoDask:
         self.dask_client = Client(cluster)
         self.dask_cluster = cluster
         if cluster: self.log.info('Dask Server successfully created')
-        self.log.info('Dashboard is available at http://localhost:8787/status')
+        self.log.info('Dashboard by default is available at http://localhost:8787/status')
 
     def _shutdown_dask_server(self):
         self.log.info('Shutting down Dask Server...')
