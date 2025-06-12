@@ -27,11 +27,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
 
-      - name: Configure Poetry
-        run: |
-          poetry config virtualenvs.create true
-          poetry install
+      - name: Install dependencies
+        run: poetry install
 
-      - name: Run Tests
+      - name: Run tests with coverage
         run: |
-          poetry run pytest
+          poetry run pytest --cov=autodask --cov-report=term-missing
