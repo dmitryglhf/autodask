@@ -32,4 +32,4 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          poetry run pytest --cov=autodask --cov-report=term-missing
+          poetry run pytest tests --cov=autodask --cov-report=term-missing
