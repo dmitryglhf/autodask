@@ -26,6 +26,9 @@ jobs:
         with:
           poetry-version: "1.8.2"
 
+      - name: Configure Poetry to use new installer
+        run: poetry config experimental.new-installer true
+
       - name: Install dependencies
         run: |
           poetry install --with dev
