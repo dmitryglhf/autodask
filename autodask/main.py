@@ -185,6 +185,7 @@ class AutoDask:
             if self.n_jobs == -1:
                 import os
                 n_workers = os.cpu_count()
+                self.n_jobs = n_workers
             elif self.n_jobs > 0:
                 n_workers = self.n_jobs
 

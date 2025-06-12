@@ -48,7 +48,6 @@ adsk = AutoDask(
     task='regression',
     n_jobs=-1,  # Use all available cores
     time_limit=3600,  # 1 hour time limit
-    metric='r2',
     with_tuning=True, # Allow bee optimization for hyperparameters
     optimization_rounds=3,
     max_ensemble_models=5,

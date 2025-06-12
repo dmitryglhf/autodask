@@ -32,6 +32,9 @@ class ModelContainer:
         self.search_space = search_space
         self.tag = tag or ""
 
+    def fit(self, X, y):
+        return self.model.fit(X, y)
+
     def predict(self, X):
         return self.model.predict(X)
 
