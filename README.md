@@ -12,7 +12,7 @@
 
 
 ## 📖 Overview
-AutoDask is a light AutoML library built on top of Dask for distributed computing, leveraging the Bee Colony Optimization (BCO) algorithm for hyperparameter tuning and model selection. It provides an easy-to-use interface for automated machine learning tasks while efficiently using computational resources.
+AutoDask is a tiny AutoML library built on top of Dask for distributed computing, leveraging the Bee Colony Optimization (BCO) algorithm for hyperparameter tuning. It provides an easy-to-use interface for automated machine learning tasks while efficiently using computational resources.
 
 ## ⚡ Quickstart
 

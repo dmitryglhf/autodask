@@ -10,14 +10,15 @@ readme = "README.md"
 requires-python = ">=3.9"
 
 dependencies = [
-    "dask[complete] >=2025.4.1,<2026.0.0",
-    "dask-ml >=2025.1.0,<2026.0.0",
-    "dask-xgboost >=0.2.0,<0.3.0",
+    "dask[complete] >=2023.5.0,<2026.0.0",
+    "dask-ml >=2024.4.4,<2026.0.0",
     "lightgbm >=4.6.0,<5.0.0",
+    "xgboost>=1.4.0",
     "catboost >=1.2.8,<2.0.0",
-    "setuptools >=80.3.1,<81.0.0",
-    "numpy ==1.24",
-    "scipy >=1.15.3,<2.0.0"
+    "numpy >=1.26",
+    "scipy >=1.13.1,<2.0.0",
+    "scikit-learn ~=1.6.1",
+    "pandas >=2.2.3"
 ]
 
 [project.optional-dependencies]
@@ -27,5 +28,5 @@ dev = [
 ]
 
 [build-system]
-requires = ["poetry-core>=1.8.0"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"

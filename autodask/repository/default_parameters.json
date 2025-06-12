@@ -17,7 +17,7 @@
     "colsample_bytree": 1.0,
     "gamma": 0,
     "min_child_weight": 1,
-    "verbose": 0
+    "verbosity": 0
   },
   "xgboost_reg": {
     "learning_rate": 0.3,
@@ -28,7 +28,7 @@
     "gamma": 0,
     "min_child_weight": 1,
     "objective": "reg:squarederror",
-    "verbose": 0
+    "verbosity": 0
   },
   "lgbm_clf": {
     "learning_rate": 0.1,
