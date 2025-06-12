@@ -26,7 +26,7 @@ jobs:
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
-        version: 2.1.2
+        version: 1.8.2
         virtualenvs-create: true
         virtualenvs-in-project: true
 
@@ -40,7 +40,7 @@ jobs:
     - name: Install dependencies
       run: |
         poetry install --no-interaction --no-root
-        poetry install --no-interaction --with dev
+        poetry install --no-interaction --only dev
 
     - name: Run tests
       run: |
