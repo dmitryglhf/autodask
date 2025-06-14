@@ -21,9 +21,10 @@ class WeightedAverageBlender(BaseEstimator):
         weights (np.ndarray): Optimized weights for each model.
 
     Examples:
+        >>> from autodask.core.data import ModelContainer
         >>> # Models must be fitted
-        >>> model1 = ModelContainer(fitted_model1, "Model1", "classification")
-        >>> model2 = ModelContainer(fitted_model2, "Model2", "classification")
+        >>> model1 = ModelContainer(fitted_model1)
+        >>> model2 = ModelContainer(fitted_model2)
         >>> blender = WeightedAverageBlender([model1, model2], task='classification')
         >>> blender.fit(X_train, y_train)
         >>> preds = blender.predict(X_test)
@@ -53,7 +54,7 @@ class WeightedAverageBlender(BaseEstimator):
             self.weights = np.array([1.0])
             return self
 
-        self.log.info(f"Starting weight optimization for models: {[mc.model_name for mc in self.model_containers]}")
+        self.log.info(f"Starting weights optimization for models: {[mc.model_name for mc in self.model_containers]}")
 
         preds_list = self._get_model_predictions(X)
         n_models = len(self.model_containers)
