@@ -94,7 +94,7 @@ class AtomizedModel:
                 model_name='l2_linreg',
                 model_task_type='regression',
                 hyperparameters=param_default.get('l2_linreg', {}),
-                search_space=param_spaces.get('rf_reg', {})
+                search_space=param_spaces.get('l2_linreg', {})
             ),
             ModelContainer(
                 model=RandomForestRegressor,

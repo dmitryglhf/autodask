@@ -6,8 +6,8 @@ class ModelContainer:
     def __init__(
             self,
             model: Any,
-            model_name: str,
-            model_task_type: str,
+            model_name: str = None,
+            model_task_type: str = None,
             metrics: Optional[Dict[str, float]] = None,
             hyperparameters: Optional[Dict[str, Any]] = None,
             search_space: Optional[Dict[str, Any]] = None,
@@ -25,7 +25,7 @@ class ModelContainer:
             tag: Optional tag for additional identification.
         """
         self.model = model
-        self.model_name = model_name
+        self.model_name = model_name or model.__class__.__name__
         self.model_task_type = model_task_type
         self.metrics = metrics or {}
         self.hyperparameters = hyperparameters or {}
