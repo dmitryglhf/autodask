@@ -8,7 +8,8 @@ class ModelContainer:
             model: Any,
             model_name: str = None,
             model_task_type: str = None,
-            metrics: Optional[Dict[str, float]] = None,
+            oof_preds = None,
+            metrics: Optional[Dict[str, Optional[float]]] = None,
             hyperparameters: Optional[Dict[str, Any]] = None,
             search_space: Optional[Dict[str, Any]] = None,
             tag: Optional[str] = None
@@ -27,6 +28,7 @@ class ModelContainer:
         self.model = model
         self.model_name = model_name or model.__class__.__name__
         self.model_task_type = model_task_type
+        self.oof_preds = oof_preds
         self.metrics = metrics or {}
         self.hyperparameters = hyperparameters or {}
         self.search_space = search_space
@@ -53,7 +55,7 @@ class ModelContainer:
             "tag": self.tag
         }
 
-    def update_metrics(self, new_metrics: Dict[str, float]):
+    def update_metrics(self, new_metrics: Dict[str, Optional[float]]):
         self.metrics.update(new_metrics)
 
     def __str__(self):
