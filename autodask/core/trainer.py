@@ -6,9 +6,10 @@ import pandas as pd
 
 # import dask.array as da
 from dask import delayed, compute
+from sklearn.model_selection import StratifiedKFold, KFold
 
+from autodask.core.data import ModelContainer
 from autodask.utils.log import get_logger
-from autodask.utils.cross_val import evaluate_model
 from autodask.repository.model_repository import AtomizedModel
 
 import warnings
@@ -18,38 +19,66 @@ from autodask.utils.regular_functions import is_classification_task, setup_metri
 warnings.filterwarnings('ignore')
 
 
+def evaluate_model(
+        model_container: ModelContainer,
+        params, X, y,
+        metric_func,
+        task: str,
+        cv_folds=5):
+    log = get_logger('CrossValidation')
+    model_class = model_container.model
+
+    try:
+        # Initialize K-fold cross-validator
+        kf = (StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=42)
+              if is_classification_task(task)
+              else KFold(n_splits=cv_folds, shuffle=True, random_state=42))
+
+        scores = []
+
+        # Initialize OOF predictions array
+        if is_classification_task(task):
+            n_classes = len(np.unique(y))
+            oof_preds = np.zeros((len(y), n_classes))
+        else:
+            oof_preds = np.zeros(len(y))
+
+        # Perform k-fold cross-validation
+        for train_index, val_index in kf.split(X, y if is_classification_task(task) else None):
+            X_train = X.iloc[train_index] if hasattr(X, 'iloc') else X[train_index]
+            X_val = X.iloc[val_index] if hasattr(X, 'iloc') else X[val_index]
+            y_train = y.iloc[train_index] if hasattr(y, 'iloc') else y[train_index]
+            y_val = np.ravel(y.iloc[val_index] if hasattr(y, 'iloc') else y[val_index])
+
+            # Train and evaluate model on this fold
+            model = model_class(**params)
+            model.fit(X_train, y_train)
+
+            if is_classification_task(task):
+                y_pred = model.predict_proba(X_val)
+            else:
+                y_pred = model.predict(X_val)
+                y_pred = np.ravel(y_pred)
+
+            # Store OOF predictions
+            oof_preds[val_index] = y_pred
+
+            # Calculate fold score
+            fold_score = metric_func(y_val, y_pred)
+            scores.append(fold_score)
+
+        # Calculate mean score
+        mean_score = np.mean(scores)
+        log.debug(f"Mean {cv_folds}-fold CV score for params {params}: {mean_score}")
+
+        model_container.update_metrics({'cv_score': mean_score})
+        model_container.oof_preds = oof_preds
+    except Exception as e:
+        log.error(f"Error during evaluation: {str(e)}")
+        raise ValueError("Invalid parameters for evaluating")
+
+
 class Trainer:
-    """Orchestrates model training, hyperparameter tuning and evaluation.
-
-    This class handles the complete model training pipeline including:
-    - Model selection based on task type
-    - Hyperparameter optimization
-    - Cross-validation
-    - Model evaluation and ranking
-
-    Args:
-        task (str): Machine learning task type ('classification' or 'regression')
-        time_limit (int, optional): Maximum training time in seconds. Defaults to None.
-        cv_folds (int, optional): Number of cross-validation folds. Defaults to None.
-        seed (int, optional): Random seed for reproducibility. Defaults to None.
-        max_ensemble_models (int, optional): Maximum number of models to keep. Defaults to None.
-        models (list, optional): Specific models to use. If None, uses all available. Defaults to None.
-
-    Attributes:
-        score_func (callable): Metric scoring function
-        metric_name (str): Name of the evaluation metric
-        maximize_metric (bool): Whether higher metric values are better
-        log (Logger): Logger instance for tracking progress
-
-    Example:
-        ```
-        >>> trainer = Trainer(task='classification', cv_folds=5)
-        >>> # Without validation data - k-fold cv
-        >>> models = trainer.launch(X_train, y_train)
-        >>> # With validation data - hold-out cv
-        >>> models = trainer.launch(X_train, y_train, validation_data=(X_val, y_val))
-        ```
-    """
 
     def __init__(self,
                  task: str,
@@ -90,20 +119,23 @@ class Trainer:
 
             self.log.info(f"Training {model_name} model...")
 
-            model_class = model_container.model
-            param_default = model_container.hyperparameters
-
-            validation_score = evaluate_model(
-                model_class, param_default, X_train, y_train, self.score_func, self.task, self.cv_folds
+            evaluate_model(
+                model_container,
+                model_container.hyperparameters,
+                X_train, y_train,
+                self.score_func, self.task,
+                self.cv_folds
             )
-            self.log.info(f'{model_name} mean {self.metric_name} cv-score = {validation_score:.5f}')
+            cv_score = model_container.metrics.get('cv_score', None)
 
-            final_model = model_class(**param_default)
+            self.log.info(f'{model_name} mean {self.metric_name} cv-score = '
+                          f'{cv_score:.5f}')
+
+            final_model = model_container.model(**model_container.hyperparameters)
             final_model.fit(X_train, y_train)
 
-            # Update the model container with the trained model and metrics
+            # Update the model container with the trained model
             model_container.model = final_model
-            model_container.update_metrics({'validation_score': validation_score})
 
             return model_container
 
@@ -118,7 +150,7 @@ class Trainer:
         fitted_models = [res for res in results if res is not None]
 
         # Sort models by performance
-        fitted_models.sort(key=lambda x: x.metrics.get('validation_score', 0), reverse=False)
+        fitted_models.sort(key=lambda x: x.metrics.get('cv_score', None), reverse=False)
 
         if not fitted_models:
             raise ValueError("No models were successfully trained.")
@@ -129,10 +161,10 @@ class Trainer:
 
         for idx, mc in enumerate(fitted_models[:len(fitted_models)], start=1):
             name = mc.model_name
-            score = mc.metrics.get('validation_score', 0)
+            score = mc.metrics.get('cv_score', 0)
             self.log.info(f"{idx:<5} {name:<15} {score:<10.5f}")
 
-        return fitted_models[:min(len(fitted_models), self.max_ensemble_models)]
+        return fitted_models[:self.max_ensemble_models]
 
     def _check_time_limit(self):
         """Check if time limit has been reached"""

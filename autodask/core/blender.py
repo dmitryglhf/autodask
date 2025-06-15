@@ -1,7 +1,5 @@
 import numpy as np
 from sklearn.base import BaseEstimator
-from sklearn.utils.validation import check_is_fitted
-from sklearn.exceptions import NotFittedError
 from scipy.optimize import minimize
 
 from autodask.core.data import ModelContainer
@@ -19,14 +17,6 @@ class WeightedAverageBlender(BaseEstimator):
 
     Attributes:
         weights (np.ndarray): Optimized weights for each model.
-
-    Examples:
-        >>> # Models must be fitted
-        >>> model1 = ModelContainer(fitted_model1, "Model1", "classification")
-        >>> model2 = ModelContainer(fitted_model2, "Model2", "classification")
-        >>> blender = WeightedAverageBlender([model1, model2], task='classification')
-        >>> blender.fit(X_train, y_train)
-        >>> preds = blender.predict(X_test)
     """
 
     def __init__(
@@ -53,9 +43,9 @@ class WeightedAverageBlender(BaseEstimator):
             self.weights = np.array([1.0])
             return self
 
-        self.log.info(f"Starting weight optimization for models: {[mc.model_name for mc in self.model_containers]}")
+        self.log.info(f"Starting weights optimization for models: {[mc.model_name for mc in self.model_containers]}")
 
-        preds_list = self._get_model_predictions(X)
+        preds_list = self._get_model_predictions()
         n_models = len(self.model_containers)
         initial_weights = np.ones(n_models) / n_models
 
@@ -79,9 +69,8 @@ class WeightedAverageBlender(BaseEstimator):
     def fit(self, X, y):
         """Fit models ensemble"""
         # Preparation
-        self._input_validation()
-        self._models_validation()
         self.n_classes = get_n_classes(y)
+        self._input_validation()
 
         # Get weights
         self._fit(X, y)
@@ -94,21 +83,19 @@ class WeightedAverageBlender(BaseEstimator):
 
     def predict(self, X):
         """Make predictions using the weighted ensemble"""
-        preds_list = self._get_model_predictions(X)
+        preds_list = []
+        for mc in self.model_containers:
+            pred = mc.model.predict_proba(X)
+            preds_list.append(pred)
         return self._blend_predictions(preds_list, self.weights, return_labels=True)
 
     def predict_proba(self, X):
         """Predict class probabilities"""
-        if not is_classification_task(self.task):
-            raise ValueError("predict_proba is only available for classification tasks.")
-        preds_list = [mc.predict_proba(X) for mc in self.model_containers]
-        return np.average(np.stack(preds_list), axis=0, weights=self.weights)
-
-    def fit_predict(self, X, y):
-        return self.fit(X, y).predict(X)
-
-    def fit_predict_proba(self, X, y):
-        return self.fit(X, y).predict_proba(X)
+        preds_list = []
+        for mc in self.model_containers:
+            pred = mc.model.predict_proba(X)
+            preds_list.append(pred)
+        return self._blend_predictions(preds_list, self.weights, return_labels=False)
 
     def _blend_predictions(self, predictions: list[np.ndarray], weights: np.ndarray, return_labels: bool = True):
         """Blend predictions using weighted average"""
@@ -122,46 +109,30 @@ class WeightedAverageBlender(BaseEstimator):
                     return (blended > 0.5).astype(int)
         return blended
 
-    def _get_model_predictions(self, X):
-        """Get predictions from all models with method availability checks"""
+    def _get_model_predictions(self):
+        """Get oof-predictions from all models"""
         preds_list = []
 
         for model_container in self.model_containers:
-            try:
-                if is_classification_task(self.task):
-                    preds = model_container.predict_proba(X)
-                else:
-                    preds = model_container.predict(X)
-
+            if hasattr(model_container, 'oof_preds'):
+                preds = model_container.oof_preds
                 preds_list.append(np.asarray(preds))
-
-            except Exception as e:
-                raise RuntimeError(
-                    f"Error getting predictions from model {model_container.model_name}: {str(e)}"
-                ) from e
+            else:
+                raise ValueError("Can't obtain oof-predictions from models containers.")
 
         return preds_list
 
     def _input_validation(self):
         """Validate input model containers"""
-        if not isinstance(self.model_containers, list) or len(self.model_containers) == 0:
-            raise ValueError("model_containers must be a non-empty list of ModelContainer instances")
+        if not getattr(self, 'model_containers', None):
+            raise ValueError(
+                "No valid model containers found. "
+                "Please provide at least one ModelContainer in model_containers attribute."
+            )
+        if not all(isinstance(m, ModelContainer) for m in self.model_containers):
+            raise TypeError("All elements in model_containers must be ModelContainer instances")
 
-        for mc in self.model_containers:
-            if not isinstance(mc, ModelContainer):
-                raise ValueError(f"All items in model_containers must be ModelContainer instances, got {type(mc)}")
-
-    def _models_validation(self):
-        """Validate that all models are fitted and compatible with the task"""
         for model_container in self.model_containers:
-            try:
-                check_is_fitted(model_container.model)
-            except NotFittedError:
-                raise ValueError(
-                    f"Model '{model_container.model_name}' is not fitted. "
-                    "All ensemble models must be fitted."
-                )
-
             if model_container.model_task_type != self.task:
                 raise ValueError(
                     f"Model '{model_container.model_name}' is for task '{model_container.model_task_type}', "
